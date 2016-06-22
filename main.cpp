@@ -406,7 +406,10 @@ static void render()
     for(int i=objects.size()-1; i>=0; i--){
         glUseProgram(objects[i].program);
         glBindVertexArray(objects[i].vao);
-        glBindTexture(GL_TEXTURE_2D, objects[i].texture);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, objects[i].texture);
+		glUniform1i(glGetUniformLocation(post_program, "uSampler"), 0);
+        
         //you should send some data to shader here
         setUniformFloat(objects[i].program, "ambientStrength", objects[i].ambientStrength);
         setUniformMat4(objects[i].program, "model", objects[i].model);
@@ -441,7 +444,8 @@ GLuint generateAttachmentTexture(GLboolean depth, GLboolean stencil)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, 800, 600, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     return textureID;
@@ -481,11 +485,11 @@ int main(int argc, char *argv[])
     glfwSetCursorPosCallback(window, cursor_pos_callback);
 
     // load shader program
-    program = setup_shader(readfile("vs.txt").c_str(), readfile("fs.txt").c_str());
-    post_program = setup_shader(readfile("post_vs.txt").c_str(), readfile("post_fs.txt").c_str());
+    program = setup_shader(readfile("shader/vs.txt").c_str(), readfile("shader/fs.txt").c_str());
+    post_program = setup_shader(readfile("shader/post_vs.txt").c_str(), readfile("shader/post_fs.txt").c_str());
 
-    int sun = add_obj(program, "sun.obj","sun.bmp");
-    int earth = add_obj(program, "earth.obj","earth.bmp");
+    int sun = add_obj(program, "render/sun.obj","render/sun.bmp");
+    int earth = add_obj(program, "render/earth.obj","render/earth.bmp");
 
     glCullFace(GL_BACK);
     // perspective(field_of_view_in_the_y_dimention, winX/winY, zNear, zFar)
@@ -549,6 +553,7 @@ int main(int argc, char *argv[])
 #define FRAMED
 #ifdef FRAMED
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+		glDrawBuffers(2, buffers); // set the output shader
 #endif
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glEnable(GL_DEPTH_TEST);
@@ -579,8 +584,16 @@ int main(int argc, char *argv[])
         setUniformFloatVector(post_program, "kernel", gaussion_filter, 9);
 
         glBindVertexArray(post_VAO);
+
+		// pass two texture to the post shader
+		glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+		glUniform1i(glGetUniformLocation(post_program, "screenTexture"), 0);
+
+		glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, textureDepthbuffer);
+		glUniform1i(glGetUniformLocation(post_program, "depthBlurTexture"), 1);
+
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
 #endif

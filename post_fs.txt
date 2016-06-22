@@ -28,10 +28,10 @@ const vec2 filterTaps[NUM_DOF_TAPS] = vec2[](
 
 void main()
 {
-    vec4 colorSum = texture2D(screenTexture, TexCoords);
+    vec4 colorSum = texture(screenTexture, TexCoords);
     float totalContribution = 1.0f;
     vec4 centerDepthBlur = texture(depthBlurTexture, TexCoords);
-
+/*
     float sizeCoC = centerDepthBlur.y * maxCoC;
     for(int i=0; i<NUM_DOF_TAPS; i++){
         vec2 tapCoord = TexCoords + filterTaps[i] * sizeCoC;
@@ -42,4 +42,8 @@ void main()
         totalContribution += tapContribution;
     }
     color = colorSum / totalContribution;
+	*/
+	//color = centerDepthBlur;
+	color = vec4(centerDepthBlur.x,centerDepthBlur.x,centerDepthBlur.x,0.0);
+	
 }

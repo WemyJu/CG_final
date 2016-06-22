@@ -21,7 +21,7 @@ float Dlens = 0.052;
 float Zfocus = 20;
 float maxCoC = 10;
 float scale = 1;
-float sceneRange = 1;
+float sceneRange = 100;
 
 void main()
 {
@@ -44,6 +44,7 @@ void main()
     //vec3 result = (ambient + diffuse + specular);
     float pixCoC = abs(Dlens * focalLen * (Zfocus - fDepth) / (Zfocus * (fDepth - focalLen)));
     float blur = clamp(pixCoC * scale / maxCoC, 0.0, 1.0);
-    vDoF = vec4(fDepth / sceneRange, blur, 0.0, 0.0);   
+    vDoF = vec4(fDepth / sceneRange, blur, 0.0, 0.0); 
+	//vDoF = vec4(0.0, 1.0, 1.0, 1.0);  	
     color = texture(uSampler, fTexcoord);
 }
