@@ -3,6 +3,8 @@
 in vec2 TexCoords;
 out vec4 color;
 
+uniform vec2 offsetData[13];
+
 uniform sampler2D screenTexture;
 uniform sampler2D depthBlurTexture;
 
@@ -11,20 +13,9 @@ const int maxCoC = 10;
 const float dx = 0.5f/600.0f;
 const float dy = 0.5f/800.0f;
 
-const vec2 filterTaps[NUM_DOF_TAPS] = vec2[](
-        vec2(-0.326212f*dx,     -0.40581f*dy),
-        vec2(-0.840144*dx,      -0.07358f*dy),
-        vec2(-0.695914f*dx,     0.457137f*dy),
-        vec2(-0.203345f*dx,     0.620716f*dy),
-        vec2(0.96234f*dx,       -0.194983f*dy),
-        vec2(0.473434f*dx,      -0.480026f*dy),
-        vec2(0.519456f*dx,      0.767022f*dy),
-        vec2(0.185461f*dx,      -0.893124f*dy),
-        vec2(0.507431f*dx,      0.064425f*dy),
-        vec2(0.89642f*dx,       0.41248f*dy),
-        vec2(-0.32194f*dx,      -0.932615*dy),
-        vec2(-0.791559f*dx,     -0.59771f*dy)
-      );
+// these are used to tuned the "pixel-bleeding" fix
+const float bleedingBias = 0.02f;
+const float bleedingMul = 30.0f;
 
 void main()
 {
@@ -43,7 +34,11 @@ void main()
     }
     color = colorSum / totalContribution;
 	*/
+	
+	
+	
 	//color = centerDepthBlur;
-	color = vec4(centerDepthBlur.x,centerDepthBlur.x,centerDepthBlur.x,0.0);
+	//color = vec4(centerDepthBlur.y,centerDepthBlur.y,centerDepthBlur.y,0.0);
+	color = vec4(1.0 ,offsetData[12].x,offsetData[12].x,0.0);
 	
 }

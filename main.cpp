@@ -12,6 +12,7 @@
 
 #define GLM_FORCE_RADIANS
 #define PI 3.1415926535
+#define SAMPLECNT 13
 
 struct object_struct{
     float ambientStrength;
@@ -32,7 +33,10 @@ unsigned int screenShader;
 double posX, posY, scalar(1.0), sigma(0.01), radius(0.1);
 int mode = 1;
 std::vector<int> indicesCount;//Number of indice of objs
-float gaussion_filter[9];
+float offsetRadius = 0.5; // make offsets (for polar coordinate)
+float sampleKernel[SAMPLECNT*2];
+glm::vec2 viewportSize = glm::vec2(800, 600);
+
 GLfloat post_vertices[] = {  // Post Vertex Array
     // position   // texcoord
     -1.0f,  1.0f,  0.0f, 1.0f,
@@ -44,6 +48,11 @@ GLfloat post_vertices[] = {  // Post Vertex Array
      1.0f,  1.0f,  1.0f, 1.0f
 };
 
+// camera setting ( in mm )
+float focalLen = 0.05; //focal length
+float Dlens = 0.02; // lens diameter
+float focusDis = 0.3; // current focus distance
+
 static std::string readfile(const char*);
 static unsigned int setup_shader(const char*, const char*);
 
@@ -52,21 +61,27 @@ static void error_callback(int error, const char* description)
     fputs(description, stderr);
 }
 
-void countGaussionFillter()
+void makeSampleOffsets(float angle)
 {
-    float sum = 0;
-    for(int i=0; i<3; i++)
-        for(int j=0; j<3; j++)
-        {
-            int x = i-1;
-            int y = j-1;
-            float exp_index = exp(-1*(x*x+y*y)/(2*sigma*sigma));
-            gaussion_filter[3*i+j] = (1/(2*PI*sigma*sigma))*exp_index;
-            sum += gaussion_filter[3*i+j];
-        }
-    for(int i=0; i<3; i++)
-        for(int j=0; j<3; j++)
-            gaussion_filter[3*i+j]/=sum;
+
+	float aspectRatio = viewportSize.x / viewportSize.y;
+
+	// convert from polar to  cartesian
+	
+	glm::vec2 pt = glm::vec2(offsetRadius*cos(angle), offsetRadius*sin(angle));
+
+	// account for aspect ratio(to avoid strenching hightlights)
+	pt.x /= aspectRatio;
+
+	// create the interpolations
+	float t;
+	for (int i=0; i < SAMPLECNT; i++){
+		t = i / (SAMPLECNT - 1.0f); // 0 to 1
+		//output[i] = (-pt)+t*2*pt;
+		glm::vec2 output = glm::vec2((-pt) + t * 2 * pt);
+		sampleKernel[i * 2] = output.x;
+		sampleKernel[i * 2+1] = output.y;
+	}
 }
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -78,7 +93,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         if(mode!=2) scalar += 0.1;
         else{ 
             sigma += 0.25;
-            countGaussionFillter();
+			//makeSampleOffsets();
         }
     }
     else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS)
@@ -87,7 +102,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
             scalar = (scalar>0.1) ? scalar-0.1 : 0;
         else if(sigma>0.26){ 
             sigma -= 0.25;
-            countGaussionFillter();
+			//makeSampleOffsets();
         }
         else sigma = 0.01;
     }
@@ -95,7 +110,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     {
         if(mode!=1){ 
             sigma += 0.25;
-            countGaussionFillter();
+			//makeSampleOffsets();
         }
         else scalar += 0.1;
     }
@@ -103,7 +118,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     {
         if(mode!=1){
             sigma = (sigma>0.26) ? sigma-0.25 : 0.01;
-            countGaussionFillter();
+			//makeSampleOffsets();
         }
         else
             scalar = (scalar>0.1) ? scalar-0.1 : 0;
@@ -130,8 +145,8 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
 static void cursor_pos_callback(GLFWwindow* window, double posx, double posy)
 {
-    posX = posx/800;
-    posY = 1-posy/600;
+	posX = posx / viewportSize.x;
+	posY = 1 - posy / viewportSize.y;
 }
 
 static unsigned int setup_shader(const char *vertex_shader, const char *fragment_shader)
@@ -389,6 +404,19 @@ static void setUniformFloatVector(unsigned int program, const std::string &name,
     glUniform1fv(loc, num, fvec);
 }
 
+static void setUniform2fv(unsigned int program, const std::string &name, const float* fvec, const int count) {
+	// This line can be ignore. But, if you have multiple shader program
+	// You must check if currect binding is the one you want
+	glUseProgram(program);
+	GLint loc = glGetUniformLocation(program, name.c_str());
+	if (loc == -1){
+		//cout << "glGetUniformLocation error!" << endl;
+		return;
+	}
+
+	glUniform2fv(loc, count, fvec);
+}
+
 static void setUniformInt(unsigned int program, const std::string &name, const int &i)
 {
     // This line can be ignore. But, if you have multiple shader program
@@ -417,6 +445,12 @@ static void render()
         setUniformVec3(objects[i].program, "lightPos", glm::vec3(0.0f));
         setUniformVec3(objects[i].program, "viewPos", glm::vec3(20.0f));
         setUniformVec3(objects[i].program, "lightColor", glm::vec3(1.0f));
+
+		// camera setup
+		setUniformFloat(objects[i].program, "focalLen", focalLen);
+		setUniformFloat(objects[i].program, "Dlens", Dlens);
+		setUniformFloat(objects[i].program, "focusDis", focusDis);
+
         glDrawElements(GL_TRIANGLES, indicesCount[i], GL_UNSIGNED_INT, nullptr);
     }
     glBindTexture(GL_TEXTURE_2D,0);
@@ -439,9 +473,9 @@ GLuint generateAttachmentTexture(GLboolean depth, GLboolean stencil)
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
     if(!depth && !stencil)
-        glTexImage2D(GL_TEXTURE_2D, 0, attachment_type, 800, 600, 0, attachment_type, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, attachment_type, viewportSize.x, viewportSize.y, 0, attachment_type, GL_UNSIGNED_BYTE, NULL);
     else // Using both a stencil and depth test, needs special format arguments
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, 800, 600, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, viewportSize.x, viewportSize.y, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);	
@@ -539,7 +573,7 @@ int main(int argc, char *argv[])
     const GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
     glDrawBuffers(2, buffers);
 
-    countGaussionFillter();
+    makeSampleOffsets(0);
 
     float last, start;
     // Perihelion = 1.47*10^8 km, Aphelion = 1.52*10^8
@@ -566,6 +600,7 @@ int main(int argc, char *argv[])
         //objects[earth].model = rotate(objects[earth].model, (float)2.8*count*glm::radians(365.0f), glm::vec3(0.39875f, 0.91706f, 0.0f));
         objects[earth].model = glm::scale(objects[earth].model, glm::vec3(5.0f));
 
+
         render();
 
 #ifdef FRAMED
@@ -575,13 +610,13 @@ int main(int argc, char *argv[])
         glDisable(GL_DEPTH_TEST);
 
         glUseProgram(post_program);
-        setUniformInt(post_program, "mode", mode);
+        /*setUniformInt(post_program, "mode", mode);
         setUniformFloat(post_program, "scalar", scalar);
         setUniformFloat(post_program, "sigma", sigma);
         setUniformFloat(post_program, "radius", radius);
         setUniformFloat(post_program, "posX", posX);
-        setUniformFloat(post_program, "posY", posY);
-        setUniformFloatVector(post_program, "kernel", gaussion_filter, 9);
+        setUniformFloat(post_program, "posY", posY);*/
+		setUniform2fv(post_program, "offsetData", sampleKernel, SAMPLECNT);
 
         glBindVertexArray(post_VAO);
 

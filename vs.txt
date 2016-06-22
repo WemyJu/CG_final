@@ -16,8 +16,6 @@ out vec3 fNormal;
 out vec3 fragPos;
 out float fDepth;
 
-float fFocalDistance = 0.05;
-//float fFocalRange = 0.3;
 void main()
 {
 	fTexcoord = texcoord;
