@@ -37,6 +37,8 @@ float offsetRadius = 0.5; // make offsets (for polar coordinate)
 float sampleKernel[SAMPLECNT*2];
 glm::vec2 viewportSize = glm::vec2(800, 600);
 
+std::ofstream fout;
+
 GLfloat post_vertices[] = {  // Post Vertex Array
     // position   // texcoord
     -1.0f,  1.0f,  0.0f, 1.0f,
@@ -558,11 +560,13 @@ int main(int argc, char *argv[])
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
     GLuint textureDepthbuffer = generateAttachmentTexture(false, false);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, textureDepthbuffer, 0);
+	GLuint textureColorbuffer2 = generateAttachmentTexture(false, false);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, textureColorbuffer2, 0);
     // rbo
     GLuint rbo;
     glGenRenderbuffers(1, &rbo);
     glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, viewportSize.x, viewportSize.y);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glFramebufferRenderbuffer(GL_RENDERBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
@@ -571,9 +575,28 @@ int main(int argc, char *argv[])
     glBindFramebuffer(GL_FRAMEBUFFER, 0); 
 
     const GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
-    glDrawBuffers(2, buffers);
+    //glDrawBuffers(2, buffers);
 
-    makeSampleOffsets(0);
+    
+
+	//=================================== SSBO ===================================
+	/*struct DebugData{
+		float depth;
+		float blur;
+	};
+
+	GLuint debugSSBO;
+	DebugData *ptr;
+
+	DebugData debugdata;
+
+	glGenBuffers(1, &debugSSBO);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, debugSSBO);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(struct DebugData), &debugdata, GL_STATIC_DRAW);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+	fout.open("test.txt");*/
+	//=================================== SSBO ===================================
 
     float last, start;
     // Perihelion = 1.47*10^8 km, Aphelion = 1.52*10^8
@@ -587,7 +610,7 @@ int main(int argc, char *argv[])
 #define FRAMED
 #ifdef FRAMED
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-		glDrawBuffers(2, buffers); // set the output shader
+		glDrawBuffers(2, buffers); // set the output buffer
 #endif
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glEnable(GL_DEPTH_TEST);
@@ -600,29 +623,77 @@ int main(int argc, char *argv[])
         //objects[earth].model = rotate(objects[earth].model, (float)2.8*count*glm::radians(365.0f), glm::vec3(0.39875f, 0.91706f, 0.0f));
         objects[earth].model = glm::scale(objects[earth].model, glm::vec3(5.0f));
 
+		// SSBO
+		/*glBindBuffer(GL_SHADER_STORAGE_BUFFER, debugSSBO);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, debugSSBO);*/
 
         render();
 
+		/*glBindBuffer(GL_SHADER_STORAGE_BUFFER, debugSSBO);
+		glMemoryBarrier(GL_ALL_BARRIER_BITS);
+		ptr = (DebugData*)glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+		fout << "time: " << last << std::endl;
+		fout << "depth: " << ptr->depth << ",blur: " << ptr->blur << std::endl;*/
+
 #ifdef FRAMED
+		// =================================== Second Pass ===================================
+		// blur the result of first pass in horizental direction
+		// ===================================================================================
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glDrawBuffer(GL_COLOR_ATTACHMENT2); // set the output buffer
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glDisable(GL_DEPTH_TEST);
+
+		
+
+		// setup the sample kernal
+		glUseProgram(post_program);
+		/*setUniformInt(post_program, "mode", mode);
+		setUniformFloat(post_program, "scalar", scalar);
+		setUniformFloat(post_program, "sigma", sigma);
+		setUniformFloat(post_program, "radius", radius);
+		setUniformFloat(post_program, "posX", posX);
+		setUniformFloat(post_program, "posY", posY);*/
+		makeSampleOffsets(0);
+		setUniform2fv(post_program, "offsetData", sampleKernel, SAMPLECNT);
+
+		glBindVertexArray(post_VAO);
+
+		// pass two texture to the post shader
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+		glUniform1i(glGetUniformLocation(post_program, "screenTexture"), 0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, textureDepthbuffer);
+		glUniform1i(glGetUniformLocation(post_program, "depthBlurTexture"), 1);
+
+		//glBindTexture(GL_TEXTURE_2D, textureColorbuffer2);
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		//glBindVertexArray(0);
+
+		// =================================== Third Pass ===================================
+		// blur the result of second pass in horizental direction
+		// ===================================================================================
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClearColor(1.0f,1.0f,1.0f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         glDisable(GL_DEPTH_TEST);
 
+		// setup the sample kernal
+		makeSampleOffsets(PI/2.0f);
         glUseProgram(post_program);
-        /*setUniformInt(post_program, "mode", mode);
-        setUniformFloat(post_program, "scalar", scalar);
-        setUniformFloat(post_program, "sigma", sigma);
-        setUniformFloat(post_program, "radius", radius);
-        setUniformFloat(post_program, "posX", posX);
-        setUniformFloat(post_program, "posY", posY);*/
 		setUniform2fv(post_program, "offsetData", sampleKernel, SAMPLECNT);
 
         glBindVertexArray(post_VAO);
 
 		// pass two texture to the post shader
 		glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+        glBindTexture(GL_TEXTURE_2D, textureColorbuffer2);
 		glUniform1i(glGetUniformLocation(post_program, "screenTexture"), 0);
 
 		glActiveTexture(GL_TEXTURE1);
@@ -644,6 +715,7 @@ int main(int argc, char *argv[])
     }
 
     // clean the framebuffer
+	fout.close();
     glDeleteFramebuffers(1, &framebuffer);
     releaseObjects();
     glfwDestroyWindow(window);
