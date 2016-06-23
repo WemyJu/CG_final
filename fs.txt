@@ -22,14 +22,14 @@ uniform float focusDis ;
 
 float maxCoC = 1;
 float scale = 100;
-float sceneRange = 100;
+float sceneRange = 99;
 float snesorHeight = 0.024f;
 
 void main()
 {
 	
 	//float pixCoC = abs(Dlens * focalLen * (focusDis - fDepth) / (focusDis * (fDepth - focalLen)));
-    float pixCoC = abs(Dlens * focalLen * (fDepth/100 - focusDis) / (fDepth/100 * (focusDis - focalLen)));
+    float pixCoC = abs(Dlens * focalLen * (fDepth/100 - focusDis) / (fDepth/100 * (focusDis - focalLen))); // assume 1 pixel is one cm;
     //float blur = clamp(pixCoC * scale/ maxCoC , 0.0, 1.0);
 	
 	// put Coc into a % of the image sensor height
@@ -38,7 +38,7 @@ void main()
 	//artificially clam % between 0 and max CoC
 	float  blur = clamp(percentOfSensor,0.0f,maxCoC);
 	
-	vDoF = vec4(fDepth / sceneRange / 100, blur*10, 0.0, 0.0); 
+	vDoF = vec4(fDepth / sceneRange , blur, 0.0, 0.0); 
 	
 	
     color = texture(uSampler, fTexcoord);
