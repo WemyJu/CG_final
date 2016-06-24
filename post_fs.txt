@@ -54,15 +54,14 @@ void main()
 		// Prevent focused foreground objects from bleeding onto blurry backgrounds
 		// but allow focused backgrounf objects to bleed onto blurry foregrounds
 		//===========================================================================
-		float weight = smapleDepthBlur.x < centerDepthBlur.x ? smapleDepthBlur.y * bleedingMul : 1.0f;
-		weight = (centerDepthBlur.y > smapleDepthBlur.y + bleedingBias) ? weight : 1.0f;
+		float weight = smapleDepthBlur.x < centerDepthBlur.x ? smaplePixel.y * bleedingMul : 1.0f;
+		weight = (centerColor.y > smaplePixel.y + bleedingBias) ? weight : 1.0f;
 		weight = clamp( weight, 0.0, 1.0 );
 		//===========================================================================
 		
 		// add this sample to the wighted average
-		colorSum = colorSum  + samplePixel * weight;
+		colorSum = colorSum + samplePixel * weight;
 		totalWeight = totalWeight + weight;
-		
 	}
 	
 	
