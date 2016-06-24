@@ -42,7 +42,7 @@ void main()
 	vDoF = vec4(fDepth / sceneRange , blur, 0.0, 0.0); 
 	
 
-    // Ambient
+    // Ambient hello
     vec3 ambient = ambientStrength * lightColor;
 
     // Diffuse
