@@ -54,29 +54,22 @@ void main()
 		// Prevent focused foreground objects from bleeding onto blurry backgrounds
 		// but allow focused backgrounf objects to bleed onto blurry foregrounds
 		//===========================================================================
-		float weight = smapleDepthBlur.x < centerDepthBlur.x ? sampleDepthBlur.y * bleedingMul : 1.0f;
-		weight = (centerDepthBlur.y > sampleDepthBlur.y + bleedingBias) ? weight : 1.0f;
+		float weight = smapleDepthBlur.x < centerDepthBlur.x ? smapleDepthBlur.y * bleedingMul : 1.0f;
+		weight = (centerDepthBlur.y > smapleDepthBlur.y + bleedingBias) ? weight : 1.0f;
 		weight = clamp( weight, 0.0, 1.0 );
 		//===========================================================================
 		
 		// add this sample to the wighted average
-		colorSum = colorSum + samplePixel * weight;
+		colorSum = colorSum  + samplePixel * weight;
 		totalWeight = totalWeight + weight;
+		
 	}
 	
 	
-	//color = colorSum / totalWeight;
+	color = colorSum / totalWeight;
 	//color = centerDepthBlur;
-	
-	//color = vec4(centerDepthBlur.x/2,centerDepthBlur.x/2,centerDepthBlur.x/2,0.0);
-	
-	//if(centerDepthBlur.x<1)
-	//	color = vec4(centerDepthBlur.x,centerDepthBlur.x,centerDepthBlur.x,0.0);
-	//else
-	//	color = vec4(1.0,0.0,0.0,0.0);
-
-
-	color = vec4(centerDepthBlur.y*10,centerDepthBlur.y*10,centerDepthBlur.y*10,0.0);
+	//color = vec4(centerDepthBlur.x,centerDepthBlur.x,centerDepthBlur.x,0.0);
+	//color = vec4(centerDepthBlur.y,centerDepthBlur.y,centerDepthBlur.y,0.0);
 	//color = vec4(1.0 ,1.0,1.0,0.0);	
 	//color = centerColor;
 }

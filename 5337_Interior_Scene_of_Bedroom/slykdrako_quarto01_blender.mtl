@@ -1,0 +1,372 @@
+# Blender MTL File: 'slykdrako_quarto01_blender.blend'
+# Material Count: 32
+
+newmtl None
+Ns 0
+Ka 0.000000 0.000000 0.000000
+Kd 0.8 0.8 0.8
+Ks 0.8 0.8 0.8
+d 1
+illum 2
+
+newmtl aluminio
+Ns 96.078431
+Ka 0.900000 0.900000 0.900000
+Kd 0.176201 0.176201 0.176201
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/WoodFine0023_M.jpg
+
+newmtl candeeira_plastico
+Ns 96.078431
+Ka 0.100000 0.100000 0.100000
+Kd 0.558543 0.558543 0.558543
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/noise01.png
+
+newmtl candeeiro_lampada
+Ns 96.078431
+Ka 0.200000 0.200000 0.200000
+Kd 0.640000 0.640000 0.640000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/noise01.png
+
+newmtl candeeiro_metal
+Ns 96.078431
+Ka 0.800000 0.800000 0.800000
+Kd 0.300592 0.300592 0.300592
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/noise01.png
+
+newmtl candeeiro_vidro
+Ns 96.078431
+Ka 0.300000 0.300000 0.300000
+Kd 0.640000 0.640000 0.640000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.520000
+d 1.000000
+illum 1
+map_Kd textures/noise01.png
+map_Bump -bm 0.300000 textures/noise01-n.png
+
+newmtl chao_madeira
+Ns 96.078431
+Ka 0.050000 0.050000 0.050000
+Kd 0.422166 0.257111 0.169179
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Bump -bm 0.010000 textures/WoodFine0038_2_M-n.jpg
+map_Kd  textures/WoodFine0038_2_M.jpg
+
+newmtl colcha
+Ns 47.058824
+Ka 1.000000 1.000000 1.000000
+Kd 0.474053 0.411045 0.187871
+Ks 0.000000 0.000000 0.000000
+Ke 0.059257 0.051381 0.023484
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/Carpet0029_2_S.jpg
+map_Bump  textures/Carpet0029_2_S-n.jpg
+map_Tr  textures/Carpet0029_2_S-s.jpg
+
+newmtl cortina
+Ns 52.941176
+Ka 1.000000 1.000000 1.000000
+Kd 0.629597 0.640000 0.586030
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.400000
+illum 1
+map_Kd textures/FabricPlain0011_M.jpg
+map_Bump -bm 0.300000 textures/FabricPlain0011_M-n.jpg
+map_Tr  textures/FabricPlain0011_M-s.jpg
+map_d  textures/FabricPlain0011_M-s.jpg
+
+newmtl espelho
+Ns 186.274510
+Ka 1.000000 1.000000 1.000000
+Kd 0.000000 0.000000 0.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/WoodFine0023_M.jpg
+
+newmtl janela_metal
+Ns 292.156863
+Ka 0.250661 0.250661 0.250661
+Kd 0.028173 0.028173 0.028173
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/noise01.png
+map_Bump -bm 0.300000 textures/noise01-n.png
+
+newmtl janela_vidro
+Ns 292.156863
+Ka 0.100000 0.100000 0.100000
+Kd 0.526806 0.548756 0.548756
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.520000
+d 0.050000
+illum 1
+map_Kd textures/noise01.png
+
+newmtl livro_capa
+Ns 96.078431
+Ka 0.050000 0.050000 0.050000
+Kd 0.021972 0.058586 0.051830
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/blender_logo.png
+
+newmtl livro_folhas
+Ns 154.901961
+Ka 1.000000 1.000000 1.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.100000 0.100000 0.100000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd textures/blender_logo.png
+map_Bump -bm 2.000000 textures/linhas-n.jpg
+
+newmtl madeira_clara
+Ns 37.254902
+Ka 1.000000 1.000000 1.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/WoodFine0023_M.jpg
+map_Bump -bm 0.002000 textures/WoodFine0023_M-n.jpg
+
+newmtl madeira_escura
+Ns 37.254902
+Ka 1.000000 1.000000 1.000000
+Kd 0.003252 0.003252 0.003252
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/WoodFine0023_M.jpg
+map_Bump -bm 0.002000 textures/WoodFine0023_M-n.jpg
+
+newmtl parede_branca
+Ns 145.098039
+Ka 1.000000 1.000000 1.000000
+Kd 0.598848 0.598848 0.598848
+Ks 0.200000 0.200000 0.200000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd textures/walls - 001-2.jpg
+map_Bump -bm 0.400000 textures/walls - 001-2-n.jpg
+
+newmtl parede_cor
+Ns 66.666667
+Ka 1.000000 1.000000 1.000000
+Kd 0.539069 0.415335 0.121817
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/Paper0039_M.jpg
+map_Bump -bm 0.010000 textures/Paper0039_M-n.jpg
+
+newmtl pedras1
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.350827 0.242986 0.178830
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/RockSmooth0022_S.jpg
+map_Bump -bm 0.100000 textures/RockSmooth0022_S-n.jpg
+
+newmtl pedras2
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.098964 0.098964 0.098964
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/RockSmooth0022_S.jpg
+map_Bump -bm 0.100000 textures/RockSmooth0028_M-n.jpg
+
+newmtl pedras3
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.558544 0.558544 0.558544
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/RockSmooth0022_S.jpg
+map_Bump -bm 0.100000 textures/RockSmooth0072_7_S-n.jpg
+
+newmtl plantas
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.041772 0.011306 0.007575
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/barks - 002.jpg
+map_Bump  textures/barks - 002-n.jpg
+
+newmtl prato
+Ns 217.647059
+Ka 0.300000 0.300000 0.300000
+Kd 0.002352 0.002126 0.002338
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+
+newmtl quadro_elephants
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.111567 0.037068 0.017016
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/elephants_dream_cover.jpg
+map_Bump -bm 0.100000 textures/WoodFine0026_M-n.jpg
+
+newmtl quadro_madeira
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.111567 0.037068 0.017016
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/sintel_cover.jpg
+map_Bump -bm 0.100000 textures/WoodFine0026_M-n.jpg
+
+newmtl quadro_madeira_elephants_dream_cover
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.111567 0.037068 0.017016
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/elephants_dream_cover.jpg
+map_Bump -bm 0.100000 textures/WoodFine0026_M-n.jpg
+
+newmtl quadro_sintel
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.111567 0.037068 0.017016
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/sintel_cover.jpg
+map_Bump -bm 0.100000 textures/WoodFine0026_M-n.jpg
+
+newmtl tapete
+Ns 27.450980
+Ka 1.000000 1.000000 1.000000
+Kd 0.034499 0.030364 0.113916
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/Carpet0039_1_M.jpg
+map_Bump -bm 2.000000 textures/Carpet0039_1_M-n.jpg
+
+newmtl tapete_fios
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.578425 0.504803 0.283939
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+
+newmtl tecido_cama_branco
+Ns 66.666667
+Ka 1.000000 1.000000 1.000000
+Kd 0.629909 0.629909 0.629909
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd textures/FabricPlain0074_M.jpg
+map_Bump  textures/FabricPlain0074_M-n.jpg
+
+newmtl varao
+Ns 378.431373
+Ka 1.000000 1.000000 1.000000
+Kd 0.008017 0.007151 0.006627
+Ks 0.050000 0.050000 0.050000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd textures/noise01.png
+map_Bump -bm 0.500000 textures/noise01-n.png
+
+newmtl vazo
+Ns 96.078431
+Ka 0.200000 0.200000 0.200000
+Kd 0.585475 0.585475 0.585475
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1

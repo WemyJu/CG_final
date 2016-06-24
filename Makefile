@@ -1,17 +1,19 @@
-EXEC = HW2
+EXEC = HW4
 .PHONY: all
 all: $(EXEC)
 
-CXXFLAGS = -I. -std=c++0x -DGLEW_STATIC
-CFLAGS = -I. -DGLEW_STATIC
+CXXFLAGS = -g -I. -I/opt/local/include -std=c++0x -DGLEW_STATIC
+CFLAGS = -g -I. -DGLEW_STATIC
 # If you can't compile, use this line instead
 #LFLAGS = -lGL -lglfw3 -lX11 -lXxf86vm -lXinerama -lXrandr -lpthread -lXi -lXcursor -ldl
-LFLAGS = `pkg-config glfw3 --libs --static` -lGL
+LFLAGS = `pkg-config glfw3 --libs --static` -g3 -lSOIL -L/opt/local/lib -lassimp -framework OpenGL
 
 OBJS := \
 	main.o \
-	tiny_obj_loader.o \
-	glew.o
+	glew.o \
+	Mesh.o \
+	Model.o
+
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 %.o: %.cpp
