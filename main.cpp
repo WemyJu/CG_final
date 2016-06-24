@@ -50,10 +50,10 @@ GLfloat post_vertices[] = {  // Post Vertex Array
      1.0f,  1.0f,  1.0f, 1.0f
 };
 
-// camera setting ( in mm )
+// camera setting ( in m )
 float focalLen = 0.05; //focal length
-float Dlens = 0.02; // lens diameter
-float focusDis = 0.3; // current focus distance
+float Dlens = 0.01; // lens diameter
+float focusDis = 0.8; // current focus distance
 
 static std::string readfile(const char*);
 static unsigned int setup_shader(const char*, const char*);
