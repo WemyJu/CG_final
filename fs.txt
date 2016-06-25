@@ -19,9 +19,9 @@ uniform float focalLen ;
 uniform float Dlens ;
 uniform float focusDis ;
 
-float maxCoC = 1;
+float maxCoC = 5;
 float scale = 100;
-float sceneRange = 99;
+float sceneRange = 100;
 float snesorHeight = 0.024f;
 float roughnessValue = 0.3;  // 0:smooth ; 1:rough
 float fresnel = 0.8;  // fresnel reflectance at normal incidence
@@ -29,8 +29,8 @@ float fresnel = 0.8;  // fresnel reflectance at normal incidence
 void main()
 {
 	
-	//float pixCoC = abs(Dlens * focalLen * (focusDis - fDepth) / (focusDis * (fDepth - focalLen)));
-    float pixCoC = abs(Dlens * focalLen * (fDepth/100 - focusDis) / (fDepth/100 * (focusDis - focalLen))); // assume 1 pixel is one cm;
+	//float pixCoC = abs(Dlens * focalLen * (focusDis - fDepth/100) / (focusDis * (fDepth/100 - focalLen)));
+    float pixCoC = abs(Dlens * focalLen * (fDepth/100 - focusDis) / (fDepth/100 * (focusDis - focalLen))); // assume 1 pixel is one m;
     //float blur = clamp(pixCoC * scale/ maxCoC , 0.0, 1.0);
 	
 	// put Coc into a % of the image sensor height

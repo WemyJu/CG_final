@@ -65,10 +65,18 @@ void main()
 	}
 	
 	
-	color = colorSum / totalWeight;
+	//color = colorSum / totalWeight;
 	//color = centerDepthBlur;
-	//color = vec4(centerDepthBlur.x,centerDepthBlur.x,centerDepthBlur.x,0.0);
-	//color = vec4(centerDepthBlur.y,centerDepthBlur.y,centerDepthBlur.y,0.0);
+	
+	//color = vec4(centerDepthBlur.x/2,centerDepthBlur.x/2,centerDepthBlur.x/2,0.0);
+	
+	//if(centerDepthBlur.x<1)
+	//	color = vec4(centerDepthBlur.x,centerDepthBlur.x,centerDepthBlur.x,0.0);
+	//else
+	//	color = vec4(1.0,0.0,0.0,0.0);
+
+
+	color = vec4(centerDepthBlur.y*10,centerDepthBlur.y*10,centerDepthBlur.y*10,0.0);
 	//color = vec4(1.0 ,1.0,1.0,0.0);	
 	//color = centerColor;
 }
