@@ -40,10 +40,10 @@ GLfloat screenVertices[] = {
          1.0f,  1.0f,  1.0f, 1.0f	//right-top
 };
 
-// camera setting ( in mm )
-float focalLen = 0.05; //focal length
-float Dlens = 0.02; // lens diameter
-float focusDis = 0.3; // current focus distance
+// camera setting ( in m )
+float focalLen = 0.024f; //focal length
+float Dlens = 0.02f; // lens diameter
+float focusDis = 0.03f; // current focus distance
 
 GLfloat lastX = 400, lastY = 300;
 GLfloat yaw=0.0, pitch=0.0;
@@ -93,7 +93,7 @@ void makeSampleOffsets(float angle)
 		glm::vec2 output = glm::vec2((-pt) + t * 2 * pt);
 		sampleKernel[i * 2] = output.x;
 		sampleKernel[i * 2+1] = output.y;
-		std::cout << i << "(" << output.x << "," << output.y << ")" << std::endl;
+		//std::cout << i << "(" << output.x << "," << output.y << ")" << std::endl;
 	}
 }
 static void setUniformFloat(GLuint program, const std::string &name, const float &value);
@@ -126,6 +126,10 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		Zoom += 1.0f;
 	else if (key == GLFW_KEY_EQUAL && action == GLFW_PRESS)
 		Zoom -= 1.0f;
+	else if (key == GLFW_KEY_COMMA && action == GLFW_PRESS)
+		focusDis -= 0.01f;
+	else if (key == GLFW_KEY_PERIOD && action == GLFW_PRESS)
+		focusDis += 0.01f;
 	else if (key == GLFW_KEY_H && action == GLFW_PRESS) {
 		if (useHDR) {
 			setUniformFloat(program, "useHDR", 0.0);
@@ -136,6 +140,9 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 			useHDR = true;
 		}
 	}
+	std::cout << "Aperture Size : " << Dlens << std::endl;
+	std::cout << "Focal Length : " << focalLen << std::endl;
+	std::cout << "Focus Distance : " << focusDis << std::endl;
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
@@ -539,6 +546,11 @@ int main(int argc, char *argv[])
 	last = lastSecond = glfwGetTime();
 	GLfloat currentTime;
 	int fps=0;
+
+	std::cout << "Aperture Size : " << Dlens << std::endl;
+	std::cout << "Focal Length : " << focalLen << std::endl;
+	std::cout << "Focus Distance : " << focusDis << std::endl;
+
 
 	while (!glfwWindowShouldClose(window))
 	{ //program will keep drawing here until you close the window

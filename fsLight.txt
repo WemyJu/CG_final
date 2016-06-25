@@ -37,12 +37,12 @@ uniform Material material;
 uniform float useHDR;
 
 // camera setting (m)
-float focalLen = 0.024;
-float Dlens = 0.02;
-float focusDis = 0.03;
-//uniform float focalLen;
-//uniform float Dlens;
-//uniform float focusDis;
+//float focalLen = 0.024;
+//float Dlens = 0.02;
+//float focusDis = 0.03;
+uniform float focalLen;
+uniform float Dlens;
+uniform float focusDis;
 
 float maxCoC = 2;
 float scale = 100;
