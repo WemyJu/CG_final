@@ -24,7 +24,7 @@ Install `assimp`
 ### Linux / Unix / MacOS
 `make`
 
-`final_project [OBJ_FILE_PATH]`
+`./final_project [OBJ_FILE_PATH]`
 
 * In our project : 
 * `./final_project 5337_Interior_Scene_of_Bedroom\slykdrako_quarto01_blender.obj`
