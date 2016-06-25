@@ -17,7 +17,7 @@
 // Pixel should be double on Retina screen
 // So we will check if this is run on OSX
 #ifdef __APPLE__
-	#define PIXELMULTI 2.0
+	#define PIXELMULTI 1.0
 #else
 	#define PIXELMULTI 1.0
 #endif

@@ -36,15 +36,15 @@ uniform PointLight pointLights[NR_POINT_LIGHTS];
 uniform Material material;
 uniform float useHDR;
 
-// camera setting
-float focalLen = 0.05;
-float Dlens = 0.05;
-float focusDis = 0.5;
+// camera setting (m)
+float focalLen = 0.024;
+float Dlens = 0.02;
+float focusDis = 0.03;
 //uniform float focalLen;
 //uniform float Dlens;
 //uniform float focusDis;
 
-float maxCoC = 1;
+float maxCoC = 2;
 float scale = 100;
 float sceneRange = 99;
 float snesorHeight = 1.0f;  //0.024f;
@@ -119,8 +119,8 @@ vec3 CalcPointLight(PointLight light, Material mat, vec3 normal, vec3 fragPos, v
         vec3 viewDir = normalize(viewPos - fragPos);
         // vec3 lightDir = normalize(lightPos - fragPos);
         float NdotH = max(dot(normal, halfVector), 0.0);
-        float VdotH = max(dot(viewDir, halfVector), 0.1);
-        float LdotH = max(dot(lightDir, halfVector), 0.1);
+        float VdotH = max(dot(viewDir, halfVector), 0.00001);
+        float LdotH = max(dot(lightDir, halfVector), 0.00001);
         float mSquared = roughnessValue * roughnessValue;
 
         // geometric term
