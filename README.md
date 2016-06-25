@@ -5,24 +5,29 @@ Then we implement the DoF & Bokeh effect with CoC in the 3D model.
 
 ## How to use
 
-    environment setting
+### Environment setting
+Install `glfw & glm`
 
-    Install `glfw & glm`
-        reference : [CGHW2](https://hackpad.com/CGHW2-IbLuMM0Otih)
-    Install `assimp`
+ -> reference : [CGHW2](https://hackpad.com/CGHW2-IbLuMM0Otih)
+ 
+Install `assimp`
 
 ### Windows
 `./compile.bat`
+
 `./final_project [OBJ_FILE_PATH]`
 
-    *In our project : ./final_project 5337_Interior_Scene_of_Bedroom\slykdrako_quarto01_blender.obj
+* In our project :
+*  `./final_project 5337_Interior_Scene_of_Bedroom\slykdrako_quarto01_blender.obj`
 
 
 ### Linux / Unix / MacOS
 `make`
+
 `final_project [OBJ_FILE_PATH]`
 
-    *In our project : ./final_project 5337_Interior_Scene_of_Bedroom\slykdrako_quarto01_blender.obj
+* In our project : 
+* `./final_project 5337_Interior_Scene_of_Bedroom\slykdrako_quarto01_blender.obj`
 
 ## Author
 * P76044499 吳敏慈
