@@ -1,12 +1,12 @@
-#include <GL/glew.h>	// should be included at the beginning!
+#include "GL/glew.h"	// should be included at the beginning!
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <cstdlib>
 #include <string>
 #include <fstream>
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "glm/glm.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 #include <vector>
 #include "Model.h"
 
@@ -54,17 +54,17 @@ GLfloat camSpeed = 40;
 GLfloat Zoom = 100.0f;
 bool useHDR = true;
 
-glm::vec3 camPos = glm::vec3(20.0,20.0,20.0);
-glm::vec3 camFront = glm::vec3(-20.0,-20.0,-20.0);
+glm::vec3 camPos = glm::vec3(10.0,10.0,10.0);
+glm::vec3 camFront = glm::vec3(-10.0,-10.0,-10.0);
 glm::vec3 camSide;
 char current_coord = 'x';
 
 GLuint frameBuffer, texColorBuffer, texColorBuffer2, texDepthBuffer;
 GLuint screenVAO, screenVBO;
 
-float offsetRadius = 0.5; // make offsets (for polar coordinate)
+float offsetRadius = 0.1; // make offsets (for polar coordinate)
 float sampleKernel[SAMPLECNT*2];
-glm::vec2 viewportSize = glm::vec2(800*2, 600*2);
+glm::vec2 viewportSize = glm::vec2(800*PIXELMULTI, 600*PIXELMULTI);
 
 glm::vec3 pointLightPositions[] = {
     glm::vec3(8.2015f, 3.40649f, -4.29478f),
@@ -75,7 +75,7 @@ GLuint program, screenProgram;
 
 void makeSampleOffsets(float angle)
 {
-
+	//std::cout << "makeSampleOffsets" << endl;
 	float aspectRatio = viewportSize.x / viewportSize.y;
 
 	// convert from polar to  cartesian
@@ -93,6 +93,7 @@ void makeSampleOffsets(float angle)
 		glm::vec2 output = glm::vec2((-pt) + t * 2 * pt);
 		sampleKernel[i * 2] = output.x;
 		sampleKernel[i * 2+1] = output.y;
+		std::cout << i << "(" << output.x << "," << output.y << ")" << std::endl;
 	}
 }
 static void setUniformFloat(GLuint program, const std::string &name, const float &value);
@@ -413,9 +414,9 @@ static void setupLighting(GLuint program) {
 }
 
 static void render(Model ourmodel) {
+    /********* 1. Switch to framebuffer first and draw *********/
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
     glDrawBuffers(2, buffers); // set the output buffer
-    /********* 1. Switch to framebuffer first and draw *********/
 	glViewport(0.0, 0.0, 800*PIXELMULTI, 600*PIXELMULTI);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -423,11 +424,13 @@ static void render(Model ourmodel) {
 	glEnable(GL_DEPTH_TEST);
     ourmodel.Draw(program);
 	/**********************************************************/
+
+	/********* 2. Switch back to default and clear buffer *********/
 	glDrawBuffer(GL_COLOR_ATTACHMENT2); 	// set the output buffer
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glDisable(GL_DEPTH_TEST);
-	/********* 2. Switch back to default and clear buffer *********/
+
 	/*
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -552,12 +555,19 @@ int main(int argc, char *argv[])
         glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// pass cameara settings
+		setUniformFloat(program,"focalLen",focalLen);
+		setUniformFloat(program,"Dlens",Dlens);
+		setUniformFloat(program,"focusDis",focusDis);
+
 		glm::mat4 model;
 		setUniformMat4(program, "projection", glm::perspective(glm::radians(Zoom), 800.0f/600, 1.0f, 100.f));
 		setUniformMat4(program, "view",
 			glm::lookAt(camPos, camPos + camFront, glm::vec3(0.0f, 1.0f, 0.0f)));
 		setUniformMat4(program, "model", glm::scale(model, glm::vec3(6.0f, 6.0f, 6.0f)));
 		setupLighting(program);
+
+
 
         render(ourmodel);
 		glfwSwapBuffers(window);	// To swap the color buffer in this game loop
