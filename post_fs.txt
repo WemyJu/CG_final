@@ -48,13 +48,13 @@ void main()
 		
 		// do the texture sampling for this sample
 		vec4 samplePixel = texture(screenTexture, sampleCoords);
-		vec4 smapleDepthBlur = texture(depthBlurTexture, sampleCoords);
+		vec4 sampleDepthBlur = texture(depthBlurTexture, sampleCoords);
 		
 		//===========================================================================
 		// Prevent focused foreground objects from bleeding onto blurry backgrounds
 		// but allow focused backgrounf objects to bleed onto blurry foregrounds
 		//===========================================================================
-		float weight = smapleDepthBlur.x < centerDepthBlur.x ? sampleDepthBlur.y * bleedingMul : 1.0f;
+		float weight = sampleDepthBlur.x < centerDepthBlur.x ? sampleDepthBlur.y * bleedingMul : 1.0f;
 		weight = (centerDepthBlur.y > sampleDepthBlur.y + bleedingBias) ? weight : 1.0f;
 		weight = clamp( weight, 0.0, 1.0 );
 		//===========================================================================
