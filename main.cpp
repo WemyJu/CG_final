@@ -521,11 +521,11 @@ int main(int argc, char *argv[])
     glfwSetCursorPosCallback(window, cursor_pos_callback);
 
     // load shader program
-    program = setup_shader(readfile("shader/vs.txt").c_str(), readfile("shader/fs.txt").c_str());
-    post_program = setup_shader(readfile("shader/post_vs.txt").c_str(), readfile("shader/post_fs.txt").c_str());
+    program = setup_shader(readfile("vs.txt").c_str(), readfile("fs.txt").c_str());
+    post_program = setup_shader(readfile("post_vs.txt").c_str(), readfile("post_fs.txt").c_str());
 
-    int sun = add_obj(program, "render/sun.obj","render/sun.bmp");
-    int earth = add_obj(program, "render/earth.obj","render/earth.bmp");
+    int sun = add_obj(program, "sun.obj","sun.bmp");
+    int earth = add_obj(program, "earth.obj","earth.bmp");
 
     glCullFace(GL_BACK);
     // perspective(field_of_view_in_the_y_dimention, winX/winY, zNear, zFar)
