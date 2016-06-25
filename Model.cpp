@@ -1,7 +1,7 @@
 #include "Mesh.h"
 #include "Model.h"
 #include <iostream>
-#include <SOIL/SOIL.h>
+#include "SOIL.h"
 
 GLint TextureFromFile(const char* path, std::string directory);
 
