@@ -17,7 +17,7 @@
 // Pixel should be double on Retina screen
 // So we will check if this is run on OSX
 #ifdef __APPLE__
-	#define PIXELMULTI 1.0
+	#define PIXELMULTI 2.0
 #else
 	#define PIXELMULTI 1.0
 #endif
@@ -50,8 +50,9 @@ float cocView = 0.0f;
 
 GLfloat lastX = 400, lastY = 300;
 GLfloat yaw=0.0, pitch=0.0;
-bool firstMouse = true;
+//bool firstMouse = true;
 
+bool isCursorRelease = false;
 GLfloat mouse_sensitivity = 0.2;
 GLfloat camSpeed = 40;
 GLfloat Zoom = 100.0f;
@@ -125,6 +126,16 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		camPos += deltaTime * camSpeed * camSide;
 	else if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT))
 		camPos -= deltaTime * camSpeed * camSide;
+	else if (key == GLFW_KEY_M && action == GLFW_PRESS) {
+		if (!isCursorRelease) {
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			isCursorRelease = true;
+		}
+		else {
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			isCursorRelease = false;
+		}
+	}
 	else if (key == GLFW_KEY_MINUS && action == GLFW_PRESS)
 		Zoom += 1.0f;
 	else if (key == GLFW_KEY_EQUAL && action == GLFW_PRESS)
@@ -157,10 +168,10 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-    if(firstMouse) {
+    if(isCursorRelease) {
         lastX = xpos;
         lastY = ypos;
-        firstMouse = false;
+        //firstMouse = false;
     }
 	else {
 	    GLfloat xoffset = xpos - lastX;
@@ -188,6 +199,14 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 		camSide = glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f)));
 
 	}
+}
+
+static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+        glfwGetCursorPos(window, &xpos, &ypos);
+	//TODO: pass mouse position to do post processing
+
 }
 
 static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
@@ -549,6 +568,7 @@ int main(int argc, char *argv[])
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	setUniformFloat(program, "useHDR", 1.0);
 
 	// setup shader program
@@ -571,7 +591,7 @@ int main(int argc, char *argv[])
 	std::cout << "Focal Length : " << focalLen << std::endl;
 	std::cout << "Focus Distance : " << focusDis << std::endl;
 
-
+	glfwSetCursorPos(window, 400.0, 300.0);
 	while (!glfwWindowShouldClose(window))
 	{ //program will keep drawing here until you close the window
 		timer = glfwGetTime() - lastSecond;
