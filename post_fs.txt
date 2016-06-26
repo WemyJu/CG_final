@@ -8,6 +8,9 @@ uniform vec2 offsetData[13];
 uniform sampler2D screenTexture;
 uniform sampler2D depthBlurTexture;
 
+uniform float cocView;
+
+
 const int NUM_DOF_TAPS = 12;
 const int maxCoC = 10;
 const float dx = 0.5f/600.0f;
@@ -36,15 +39,15 @@ void main()
 	*/
 
 	// for finding the weighted average
-	vec4 colorSum = vec4(0.0f, 0.0f, 0.0f, 0.0f);
-	float totalWeight = 0.0f;
+	vec4 colorSum = centerColor;
+	float totalWeight = 1.0f;
 
 	// for each sampler
 	for(int i =0 ; i < 13 ; i++){
 		vec2 offset = offsetData[i];
 
 		// calculate the coordinates for this sampler
-		vec2 sampleCoords = TexCoords + offset * centerDepthBlur.y;
+		vec2 sampleCoords = TexCoords + offset * centerColor.a;
 
 		// do the texture sampling for this sample
 		vec4 samplePixel = texture(screenTexture, sampleCoords);
@@ -54,8 +57,8 @@ void main()
 		// Prevent focused foreground objects from bleeding onto blurry backgrounds
 		// but allow focused backgrounf objects to bleed onto blurry foregrounds
 		//===========================================================================
-		float weight = sampleDepthBlur.x < centerDepthBlur.x ? sampleDepthBlur.y * bleedingMul : 1.0f;
-		weight = (centerDepthBlur.y > sampleDepthBlur.y + bleedingBias) ? weight : 1.0f;
+		float weight = samplePixel.a * bleedingMul ;
+		weight = sampleDepthBlur.x < centerDepthBlur.x ? weight :((centerColor.a < samplePixel.a + bleedingBias) ? weight : 0.0f);
 		weight = clamp( weight, 0.0, 1.0 );
 		//===========================================================================
 
@@ -65,8 +68,12 @@ void main()
 
 	}
 
+	if(cocView == 1.0f)
+		color = vec4(centerDepthBlur.y/0.024,centerDepthBlur.y/0.024,centerDepthBlur.y/0.024,0.0);
+	else
+		color = colorSum / totalWeight;
 
-	color = colorSum / totalWeight;
+	//color = colorSum / totalWeight;
 	//color = centerDepthBlur;
 	//color = vec4(centerDepthBlur.x,centerDepthBlur.x,centerDepthBlur.x,0.0);
 	//color = vec4(centerDepthBlur.y,centerDepthBlur.y,centerDepthBlur.y,0.0);

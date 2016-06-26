@@ -44,16 +44,31 @@ uniform float focalLen;
 uniform float Dlens;
 uniform float focusDis;
 
-float maxCoC = 2;
-float scale = 100;
+float maxCoC = 0.024;
+float scale = 0.5; // used to adjust the depth to real world length
 float sceneRange = 99;
-float snesorHeight = 1.0f;  //0.024f;
+float snesorHeight = 0.024f;
 
 // Function prototypes
 vec3 CalcPointLight(PointLight light, Material mat, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 toneMapping(vec3 color);
 void main()
 {
+    
+    //=============== CoC ========================//
+
+    //float pixCoC = abs(Dlens * focalLen * (focusDis - fDepth/100) / (focusDis * (fDepth/100 - focalLen)));
+    float pixCoC = abs(Dlens * focalLen * (fDepth/scale - focusDis) / (fDepth/scale * (focusDis - focalLen))); // assume 1 pixel is one cm;
+    //float blur = clamp(pixCoC * scale/ maxCoC , 0.0, 1.0);
+
+	// put Coc into a % of the image sensor height
+	float percentOfSensor = pixCoC/snesorHeight;
+
+	//artificially clam % between 0 and max CoC
+	float  blur = clamp(percentOfSensor,0.0f,maxCoC);
+
+	vDoF = vec4(fDepth / sceneRange , blur, 0.0, 0.0);
+
     //================= color ===================/
     vec3 result = vec3(0.0,0.0,0.0);
     vec3 viewDir = normalize(viewPos - fragPosition);
@@ -65,22 +80,9 @@ void main()
 
     if (useHDR == 1)
         result = toneMapping(result);
-    color = vec4(result, 1.0f);
+    color = vec4(result, blur);
     //color = texture(material.texture_diffuse1, TexCoords);
 
-    //=============== CoC ========================//
-
-    //float pixCoC = abs(Dlens * focalLen * (focusDis - fDepth/100) / (focusDis * (fDepth/100 - focalLen)));
-    float pixCoC = abs(Dlens * focalLen * (fDepth/100 - focusDis) / (fDepth/100 * (focusDis - focalLen))); // assume 1 pixel is one cm;
-    //float blur = clamp(pixCoC * scale/ maxCoC , 0.0, 1.0);
-
-	// put Coc into a % of the image sensor height
-	float percentOfSensor = pixCoC/snesorHeight;
-
-	//artificially clam % between 0 and max CoC
-	float  blur = clamp(percentOfSensor,0.0f,maxCoC);
-
-	vDoF = vec4(fDepth / sceneRange , blur, 0.0, 0.0);
 }
 
 vec3 toneMapping(vec3 color)

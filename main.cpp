@@ -41,9 +41,12 @@ GLfloat screenVertices[] = {
 };
 
 // camera setting ( in m )
-float focalLen = 0.024f; //focal length
-float Dlens = 0.02f; // lens diameter
-float focusDis = 0.03f; // current focus distance
+float focalLen = 0.050f; //focal length
+float Dlens = 0.001f; // lens diameter
+float focusDis = 0.100f; // current focus distance
+
+bool blur = false;
+float cocView = 0.0f;
 
 GLfloat lastX = 400, lastY = 300;
 GLfloat yaw=0.0, pitch=0.0;
@@ -62,7 +65,7 @@ char current_coord = 'x';
 GLuint frameBuffer, texColorBuffer, texColorBuffer2, texDepthBuffer;
 GLuint screenVAO, screenVBO;
 
-float offsetRadius = 0.1; // make offsets (for polar coordinate)
+float offsetRadius = 0.5; // make offsets (for polar coordinate)
 float sampleKernel[SAMPLECNT*2];
 glm::vec2 viewportSize = glm::vec2(800*PIXELMULTI, 600*PIXELMULTI);
 
@@ -130,6 +133,13 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		focusDis -= 0.01f;
 	else if (key == GLFW_KEY_PERIOD && action == GLFW_PRESS)
 		focusDis += 0.01f;
+	else if (key == GLFW_KEY_B && action == GLFW_PRESS)
+		blur = !blur;
+	else if (key == GLFW_KEY_C && action == GLFW_PRESS)
+		if(cocView==0.0)
+			cocView = 1.0f;
+		else
+			cocView = 0.0f;
 	else if (key == GLFW_KEY_H && action == GLFW_PRESS) {
 		if (useHDR) {
 			setUniformFloat(program, "useHDR", 0.0);
@@ -422,14 +432,22 @@ static void setupLighting(GLuint program) {
 
 static void render(Model ourmodel) {
     /********* 1. Switch to framebuffer first and draw *********/
-	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-    glDrawBuffers(2, buffers); // set the output buffer
+    if(blur){
+		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+    	glDrawBuffers(2, buffers); // set the output buffer
+	}
+	else
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	glViewport(0.0, 0.0, 800*PIXELMULTI, 600*PIXELMULTI);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
     ourmodel.Draw(program);
+
+    if(!blur)
+    	return;
 	/**********************************************************/
 
 	/********* 2. Switch back to default and clear buffer *********/
@@ -447,7 +465,7 @@ static void render(Model ourmodel) {
 
 	/********* 3. Use screen shader to do post processing *********/
 	glUseProgram(screenProgram);
-    makeSampleOffsets(0);
+    makeSampleOffsets(PI/4.0f);
     setUniform2fv(screenProgram, "offsetData", sampleKernel, SAMPLECNT);
 	glBindVertexArray(screenVAO);
 
@@ -459,6 +477,8 @@ static void render(Model ourmodel) {
     glBindTexture(GL_TEXTURE_2D, texDepthBuffer);
     glUniform1i(glGetUniformLocation(screenProgram, "depthBlurTexture"), 1);
 
+    setUniformFloat(screenProgram,"cocView",cocView);
+
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 
@@ -469,7 +489,7 @@ static void render(Model ourmodel) {
     glDisable(GL_DEPTH_TEST);
 
     // setup the sample kernal
-    makeSampleOffsets(PI/2.0f);
+    makeSampleOffsets(PI*3.0f/4.0f);
     glUseProgram(screenProgram);
     setUniform2fv(screenProgram, "offsetData", sampleKernel, SAMPLECNT);
 
@@ -567,10 +587,6 @@ int main(int argc, char *argv[])
         glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// pass cameara settings
-		setUniformFloat(program,"focalLen",focalLen);
-		setUniformFloat(program,"Dlens",Dlens);
-		setUniformFloat(program,"focusDis",focusDis);
 
 		glm::mat4 model;
 		setUniformMat4(program, "projection", glm::perspective(glm::radians(Zoom), 800.0f/600, 1.0f, 100.f));
@@ -578,6 +594,11 @@ int main(int argc, char *argv[])
 			glm::lookAt(camPos, camPos + camFront, glm::vec3(0.0f, 1.0f, 0.0f)));
 		setUniformMat4(program, "model", glm::scale(model, glm::vec3(6.0f, 6.0f, 6.0f)));
 		setupLighting(program);
+
+		// pass cameara settings
+		setUniformFloat(program,"focalLen",focalLen);
+		setUniformFloat(program,"Dlens",Dlens);
+		setUniformFloat(program,"focusDis",focusDis);
 
 
 
