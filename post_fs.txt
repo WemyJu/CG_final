@@ -55,7 +55,7 @@ void main()
 		vec2 offset = offsetData[i];
 
 		// calculate the coordinates for this sampler
-		vec2 sampleCoords = TexCoords + offset * centerColor.a;
+		vec2 sampleCoords = TexCoords + offset * centerColor.a*1.2;
 
 		// do the texture sampling for this sample
 		vec4 samplePixel = texture(screenTexture, sampleCoords);
@@ -78,7 +78,7 @@ void main()
 			offset = offsetData2[i];
 
 			// calculate the coordinates for this sampler
-			sampleCoords = TexCoords + offset * centerColor.a;
+			sampleCoords = TexCoords + offset * centerColor.a*1.2;
 
 			// do the texture sampling for this sample
 			samplePixel = texture(screenTexture, sampleCoords);
@@ -102,6 +102,7 @@ void main()
 
 	if(cocView == 1.0f)
 		color = vec4(centerDepthBlur.y/0.024,centerDepthBlur.y/0.024,centerDepthBlur.y/0.024,0.0);
+        //color = vec4(centerDepthBlur.x,centerDepthBlur.x,centerDepthBlur.x,0.0);
 	else{
 		color = colorSum / totalWeight;
 

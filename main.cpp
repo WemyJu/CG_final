@@ -17,7 +17,7 @@
 // Pixel should be double on Retina screen
 // So we will check if this is run on OSX
 #ifdef __APPLE__
-	#define PIXELMULTI 1.0
+	#define PIXELMULTI 2.0
 #else
 	#define PIXELMULTI 1.0
 #endif
@@ -72,7 +72,7 @@ glm::vec3 camSide;
 char current_coord = 'x';
 
 //*****************
-// texColorBuffer : first pass 
+// texColorBuffer : first pass
 GLuint frameBuffer, texColorBuffer, texColorBuffer2, texColorBuffer3, texColorBuffer4, texDepthBuffer;
 GLuint screenVAO, screenVBO;
 
@@ -82,7 +82,8 @@ glm::vec2 viewportSize = glm::vec2(800*PIXELMULTI, 600*PIXELMULTI);
 
 glm::vec3 pointLightPositions[] = {
     glm::vec3(8.2015f, 3.40649f, -4.29478f),
-    glm::vec3(-8.61112f, 3.45869f, -4.35868f)
+    glm::vec3(-8.61112f, 3.45869f, -4.35868f),
+	glm::vec3(14.7265f, 18.1351f, 23.0913f)
 };
 
 GLuint program, screenProgram;
@@ -150,15 +151,15 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		Zoom += 1.0f;
 	else if (key == GLFW_KEY_EQUAL && action == GLFW_PRESS)
 		Zoom -= 1.0f;
-	else if (key == GLFW_KEY_COMMA && action == GLFW_PRESS) 
+	else if (key == GLFW_KEY_COMMA && action == GLFW_PRESS)
 		focusDis -= 0.05f;
 	else if (key == GLFW_KEY_PERIOD && action == GLFW_PRESS)
 		focusDis += 0.05f;
-	else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) 
+	else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS)
 		focalLen -= 0.005f;
 	else if (key == GLFW_KEY_UP && action == GLFW_PRESS)
 		focalLen += 0.005f;
-	else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) 
+	else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
 		aperture -= 1.0f;
 	else if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
 		aperture += 1.0f;
@@ -420,9 +421,10 @@ GLuint generateAttachmentTexture(GLboolean depth, GLboolean stencil)
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
     if(!depth && !stencil)
-		glTexImage2D(GL_TEXTURE_2D, 0, attachment_type, viewportSize.x, viewportSize.y, 0, attachment_type, GL_UNSIGNED_BYTE, NULL);
+		//glTexImage2D(GL_TEXTURE_2D, 0, attachment_type, viewportSize.x, viewportSize.y, 0, attachment_type, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, viewportSize.x, viewportSize.y, 0, GL_RGBA, GL_FLOAT, NULL);
     else // Using both a stencil and depth test, needs special format arguments
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, viewportSize.x, viewportSize.y, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, viewportSize.x, viewportSize.y, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
@@ -477,20 +479,29 @@ void frameBuffer_init()
 static void setupLighting(GLuint program) {
 	setUniformVec3(program, "viewPos", camPos);
 	setUniformVec3(program, "pointLights[0].position", pointLightPositions[0]);
-	setUniformVec3(program, "pointLights[0].ambient" , glm::vec3(0.4f));
+	setUniformVec3(program, "pointLights[0].ambient" , glm::vec3(0.7f));
 	setUniformVec3(program, "pointLights[0].diffuse" , glm::vec3(1.5f));
 	setUniformVec3(program, "pointLights[0].specular", glm::vec3(1.0f));
 	setUniformFloat(program, "pointLights[0].constant", 1.0f);
 	setUniformFloat(program, "pointLights[0].linear", 0.009);
-	setUniformFloat(program, "pointLights[0].quadratic", 0.0032);
+	setUniformFloat(program, "pointLights[0].quadratic", 0.001);
 
 	setUniformVec3(program, "pointLights[1].position", pointLightPositions[1]);
-	setUniformVec3(program, "pointLights[1].ambient" , glm::vec3(0.4f));
+	setUniformVec3(program, "pointLights[1].ambient" , glm::vec3(0.7f));
 	setUniformVec3(program, "pointLights[1].diffuse" , glm::vec3(1.5f));
 	setUniformVec3(program, "pointLights[1].specular", glm::vec3(1.0f));
 	setUniformFloat(program, "pointLights[1].constant", 1.0f);
 	setUniformFloat(program, "pointLights[1].linear", 0.009);
-	setUniformFloat(program, "pointLights[1].quadratic", 0.0032);
+	setUniformFloat(program, "pointLights[1].quadratic", 0.001);
+
+	setUniformVec3(program, "pointLights[2].position", pointLightPositions[2]);
+	setUniformVec3(program, "pointLights[2].ambient" , glm::vec3(0.7f));
+	setUniformVec3(program, "pointLights[2].diffuse" , glm::vec3(1.5f));
+	setUniformVec3(program, "pointLights[2].specular", glm::vec3(1.0f));
+	setUniformFloat(program, "pointLights[2].constant", 1.0f);
+	setUniformFloat(program, "pointLights[2].linear", 0.009);
+	setUniformFloat(program, "pointLights[2].quadratic", 0.001);
+
 	setUniformFloat(program, "material.shininess", 32);
 }
 
@@ -530,12 +541,12 @@ static void render(Model ourmodel) {
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	*/
-	
+
 	// pass the sample offset to shader
 	glUseProgram(screenProgram);
     makeSampleOffsets(currentShapeAng[0].x);
     setUniform2fv(screenProgram, "offsetData", sampleKernel, SAMPLECNT);
-    
+
 
     // bind the texture vertex
 	glBindVertexArray(screenVAO);
@@ -558,7 +569,7 @@ static void render(Model ourmodel) {
     	setUniformFloat(screenProgram,"complex",1.0f); // complex shape 2nd pass
     }
     else
-    	setUniformFloat(screenProgram,"complex",0.0f); 
+    	setUniformFloat(screenProgram,"complex",0.0f);
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
@@ -711,7 +722,7 @@ int main(int argc, char *argv[])
 		fps++;
 		if(timer > 1.0)
 		{
-			//std::cout << camPos.x << " " << camPos.y << " " << camPos.z << std::endl;
+			std::cout << camPos.x << " " << camPos.y << " " << camPos.z << std::endl;
 			//std::cout << (double)fps/timer << std::endl;
 			fps = 0;
 			lastSecond = glfwGetTime();
