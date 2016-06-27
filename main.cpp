@@ -25,6 +25,14 @@
 double xpos,ypos;	// Mouse Pos
 
 const GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT4};
+const GLenum buffers2[] = {GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
+enum shapes{
+	square, diamond, parallel, star
+};
+
+const glm::vec2 shapeAngles[]={glm::vec2(0,PI/2.0f),glm::vec2(PI/4.0f,PI*3.0f/4.0f),glm::vec2(0,PI/4.0f)};
+std::vector<glm::vec2> currentShapeAng;
+int currentShape;
 
 GLfloat deltaTime;  // To synchronize camera moving speed
 
@@ -41,9 +49,9 @@ GLfloat screenVertices[] = {
 };
 
 // camera setting ( in m )
-float focalLen = 0.06f; //focal length
+float focalLen = 0.025f; //focal length
 float aperture = 8.0f; // aperture diameter = f/Dlens (like real camera notation)
-float focusDis = 0.1f; // current focus distance
+float focusDis = 0.2f; // current focus distance
 
 bool blur = false;
 float cocView = 0.0f;
@@ -63,6 +71,8 @@ glm::vec3 camFront = glm::vec3(-10.0,-10.0,-10.0);
 glm::vec3 camSide;
 char current_coord = 'x';
 
+//*****************
+// texColorBuffer : first pass 
 GLuint frameBuffer, texColorBuffer, texColorBuffer2, texColorBuffer3, texColorBuffer4, texDepthBuffer;
 GLuint screenVAO, screenVBO;
 
@@ -82,7 +92,7 @@ void makeSampleOffsets(float angle)
 	//std::cout << "makeSampleOffsets" << endl;
 	float aspectRatio = viewportSize.x / viewportSize.y;
 
-	// convert from polar to  cartesian
+	// convert from polar to cartesian
 
 	glm::vec2 pt = glm::vec2(offsetRadius*cos(angle), offsetRadius*sin(angle));
 
@@ -154,6 +164,27 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		aperture += 1.0f;
 	else if (key == GLFW_KEY_B && action == GLFW_PRESS)
 		blur = !blur;
+	else if (key == GLFW_KEY_4 && action == GLFW_PRESS){
+		currentShapeAng.clear();
+		currentShapeAng.push_back(shapeAngles[square]);
+		currentShape = square;
+	}
+	else if (key == GLFW_KEY_5 && action == GLFW_PRESS){
+		currentShapeAng.clear();
+		currentShapeAng.push_back(shapeAngles[diamond]);
+		currentShape = diamond;
+	}
+	else if (key == GLFW_KEY_6 && action == GLFW_PRESS){
+		currentShapeAng.clear();
+		currentShapeAng.push_back(shapeAngles[parallel]);
+		currentShape = parallel;
+	}
+	else if (key == GLFW_KEY_7 && action == GLFW_PRESS){
+		currentShapeAng.clear();
+		currentShapeAng.push_back(shapeAngles[square]);
+		currentShapeAng.push_back(shapeAngles[diamond]);
+		currentShape = star;
+	}
 	else if (key == GLFW_KEY_C && action == GLFW_PRESS)
 		if(cocView==0.0)
 			cocView = 1.0f;
@@ -464,7 +495,7 @@ static void setupLighting(GLuint program) {
 }
 
 static void render(Model ourmodel) {
-    /********* 1. Switch to framebuffer first and draw *********/
+    /********* 1. Switch to framebuffer, compute CoC and get the depth map*********/
     if(blur){
 		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
     	glDrawBuffers(2, buffers); // set the output buffer
@@ -481,10 +512,15 @@ static void render(Model ourmodel) {
 
     if(!blur)
     	return;
-	/**********************************************************/
+	/******************************************************/
 
-	/********* 2. Switch back to default and clear buffer *********/
-	glDrawBuffer(GL_COLOR_ATTACHMENT1); 	// set the output buffer
+	/********* 2. 2nd pass, blur in one direction *********/
+	if(currentShape >= star){
+		glDrawBuffers(2,buffers2);
+	}
+	else
+		glDrawBuffer(GL_COLOR_ATTACHMENT1); 	// set the output buffer
+
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glDisable(GL_DEPTH_TEST);
@@ -494,12 +530,14 @@ static void render(Model ourmodel) {
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	*/
-	/**************************************************************/
-
-	/********* 3. Use screen shader to do post processing *********/
+	
+	// pass the sample offset to shader
 	glUseProgram(screenProgram);
-    makeSampleOffsets(PI/4.0f);
+    makeSampleOffsets(currentShapeAng[0].x);
     setUniform2fv(screenProgram, "offsetData", sampleKernel, SAMPLECNT);
+    
+
+    // bind the texture vertex
 	glBindVertexArray(screenVAO);
 
     glActiveTexture(GL_TEXTURE0);
@@ -512,8 +550,22 @@ static void render(Model ourmodel) {
 
     setUniformFloat(screenProgram,"cocView",cocView);
 
+    // for complex aperture shape
+    if(currentShape >=star){
+    	makeSampleOffsets(currentShapeAng[1].x);
+    	setUniform2fv(screenProgram, "offsetData2", sampleKernel, SAMPLECNT);
+
+    	setUniformFloat(screenProgram,"complex",1.0f); // complex shape 2nd pass
+    }
+    else
+    	setUniformFloat(screenProgram,"complex",0.0f); 
+
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
+
+	/*************************************************************************************/
+
+	/********* 3. Switch to default framebuffer and do the final post processing *********/
 
 	//glBindVertexArray(screenVAO);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -522,11 +574,12 @@ static void render(Model ourmodel) {
     glDisable(GL_DEPTH_TEST);
 
     // setup the sample kernal
-    makeSampleOffsets(PI*3.0f/4.0f);
+    makeSampleOffsets(currentShapeAng[0].y);
     glUseProgram(screenProgram);
     setUniform2fv(screenProgram, "offsetData", sampleKernel, SAMPLECNT);
 
 	glBindVertexArray(screenVAO);
+
     // pass two texture to the post shader
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texColorBuffer2);
@@ -535,6 +588,17 @@ static void render(Model ourmodel) {
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texDepthBuffer);
     glUniform1i(glGetUniformLocation(screenProgram, "depthBlurTexture"), 1);
+
+    if(currentShape >=star){
+    	makeSampleOffsets(currentShapeAng[1].y);
+    	setUniform2fv(screenProgram, "offsetData2", sampleKernel, SAMPLECNT);
+
+    	setUniformFloat(screenProgram,"complex",2.0f); // complex shape 2nd pass
+
+    	glActiveTexture(GL_TEXTURE2);
+    	glBindTexture(GL_TEXTURE_2D, texColorBuffer3);
+    	glUniform1i(glGetUniformLocation(screenProgram, "screenTexture2"), 2);
+    }
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
@@ -600,6 +664,9 @@ int main(int argc, char *argv[])
 	last = lastSecond = glfwGetTime();
 	GLfloat currentTime;
 	int fps=0;
+
+	currentShapeAng.push_back(shapeAngles[square]);
+	currentShape = square;
 
 	std::cout << "Aperture Size : " << aperture << std::endl;
 	std::cout << "Focal Length : " << focalLen << std::endl;

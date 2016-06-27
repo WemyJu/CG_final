@@ -1,14 +1,19 @@
 #version 330
 
 in vec2 TexCoords;
-out vec4 color;
+//out vec4 color;
+layout(location=0) out vec4 color;
+layout(location=1) out vec4 color2;
 
 uniform vec2 offsetData[13];
+uniform vec2 offsetData2[13];
 
 uniform sampler2D screenTexture;
+uniform sampler2D screenTexture2;
 uniform sampler2D depthBlurTexture;
 
 uniform float cocView;
+uniform float complex; // 0 for simple shape; 1 for complex shape pass 2; 2 for complex shape pass 3
 
 
 const int NUM_DOF_TAPS = 12;
@@ -42,6 +47,9 @@ void main()
 	vec4 colorSum = centerColor;
 	float totalWeight = 1.0f;
 
+	vec4 colorSum2 = centerColor;
+	float totalWeight2 = 1.0f;
+
 	// for each sampler
 	for(int i =0 ; i < 13 ; i++){
 		vec2 offset = offsetData[i];
@@ -66,12 +74,43 @@ void main()
 		colorSum = colorSum  + samplePixel * weight;
 		totalWeight = totalWeight + weight;
 
+		if(complex > 1.0f){
+			offset = offsetData2[i];
+
+			// calculate the coordinates for this sampler
+			sampleCoords = TexCoords + offset * centerColor.a;
+
+			// do the texture sampling for this sample
+			samplePixel = texture(screenTexture, sampleCoords);
+			sampleDepthBlur = texture(depthBlurTexture, sampleCoords);
+
+			//===========================================================================
+			// Prevent focused foreground objects from bleeding onto blurry backgrounds
+			// but allow focused backgrounf objects to bleed onto blurry foregrounds
+			//===========================================================================
+			weight = samplePixel.a * bleedingMul ;
+			weight = sampleDepthBlur.x < centerDepthBlur.x ? weight :((centerColor.a < samplePixel.a + bleedingBias) ? weight : 0.0f);
+			weight = clamp( weight, 0.0, 1.0 );
+			//===========================================================================
+
+			// add this sample to the wighted average
+			colorSum2 = colorSum2  + samplePixel * weight;
+			totalWeight2 = totalWeight2 + weight;
+		}
+
 	}
 
 	if(cocView == 1.0f)
 		color = vec4(centerDepthBlur.y/0.024,centerDepthBlur.y/0.024,centerDepthBlur.y/0.024,0.0);
-	else
+	else{
 		color = colorSum / totalWeight;
+
+		color2 = colorSum2 / totalWeight2; // has no effect with rendering simple aperture shape
+
+		if(complex == 2.0f)
+			color = max(color,color2);
+
+	}
 
 	//color = colorSum / totalWeight;
 	//color = centerDepthBlur;
