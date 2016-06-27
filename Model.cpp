@@ -86,7 +86,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
             indices.push_back(face.mIndices[j]);
     }
 
-    if (mesh->mMaterialIndex > 0) {
+    if (mesh->mMaterialIndex >= 0) {
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
         std::vector<Texture> diffuseMaps = this->loadMaterialTextures(material,
                                         aiTextureType_DIFFUSE, "texture_diffuse");
@@ -105,7 +105,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
     for (GLuint i = 0; i < mat->GetTextureCount(type); i++)
     {
         aiString str;
-        if (mat->GetTexture(type, i, &str) !=  AI_SUCCESS)
+        if (mat->GetTexture(type, i, &str) != AI_SUCCESS)
             std::cout << "get texture error!" << std::endl;
         bool shouldSkip = false;
         //std::cout << str.data << std::endl;
@@ -150,6 +150,9 @@ GLint TextureFromFile(const char* path, std::string directory)
     glGenTextures(1, &textureID);
     int width,height;
     unsigned char* image = SOIL_load_image(filename.c_str(), &width, &height, 0, SOIL_LOAD_RGB);
+    if (image == NULL)
+        std::cout << "Image not found!" << std::endl;
+
     // Assign texture to ID
     glBindTexture(GL_TEXTURE_2D, textureID);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
