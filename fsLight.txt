@@ -18,6 +18,8 @@ struct PointLight {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+
+    vec3 color;
 };
 
 #define NR_POINT_LIGHTS 3
@@ -33,6 +35,7 @@ layout(location=1) out vec4 vDoF;
 
 uniform vec3 viewPos;
 uniform PointLight pointLights[NR_POINT_LIGHTS];
+uniform float PointLight_Count;
 uniform Material material;
 uniform float useHDR;
 
@@ -78,7 +81,7 @@ void main()
     vec3 viewDir = normalize(viewPos - fragPosition);
     vec3 norm = normalize(Normal);
 
-    for(int i = 0; i < NR_POINT_LIGHTS; i++)
+    for(int i = 0; i < PointLight_Count; i++)
         result += CalcPointLight(pointLights[i], material, norm, fragPosition, viewDir);
 
 
@@ -86,7 +89,7 @@ void main()
         result = toneMapping(result);
     color = vec4(result, blur);
     //color = texture(material.texture_diffuse1, TexCoords);
-
+    //color = vec4(Normal, 0.0f);
 }
 
 vec3 toneMapping(vec3 color)
@@ -144,7 +147,7 @@ vec3 CalcPointLight(PointLight light, Material mat, vec3 normal, vec3 fragPos, v
         F *= (1.0 - fresnel);
         F += fresnel;
 
-        spec = G * R * F / (max(VdotN * LdotN, 0.1) * 3.142);
+        spec = G * R * F / (max(VdotN * LdotN, 0.00001) * 3.142);
     }
 
     // Attenuation
@@ -153,16 +156,12 @@ vec3 CalcPointLight(PointLight light, Material mat, vec3 normal, vec3 fragPos, v
 
     // Combine results
     vec3 ambient = light.ambient * mat_ambient * vec3(texture(mat.texture_diffuse1, TexCoords));
-    vec3 diffuse = light.diffuse * mat_diffuse * diff * vec3(texture(mat.texture_diffuse1, TexCoords));
-    vec3 specular = light.specular * mat_specular * spec * vec3(texture(mat.texture_specular1, TexCoords));
+    vec3 diffuse = 1.2*light.diffuse * mat_diffuse * vec3(texture(mat.texture_diffuse1, TexCoords));
+    vec3 specular = 1.5*light.specular * mat_specular * spec * vec3(texture(mat.texture_specular1, TexCoords));
 
     ambient *= attenuation;
     diffuse *= attenuation;
     specular *= attenuation;
 
-    //return (ambient + diffuse + specular);
-    float diffValue = 0.2;
-    return attenuation * LdotN * (diff + (1-diff) * specular ) + attenuation * ambient;
-    //return (ambient + diffuse);
-
+    return light.color * (ambient + LdotN * (diffuse + specular));
 }

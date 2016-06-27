@@ -80,11 +80,16 @@ float offsetRadius = 0.5; // make offsets (for polar coordinate)
 float sampleKernel[SAMPLECNT*2];
 glm::vec2 viewportSize = glm::vec2(800*PIXELMULTI, 600*PIXELMULTI);
 
-glm::vec3 pointLightPositions[] = {
+glm::vec3 pointLightPositions1[] = {
     glm::vec3(8.2015f, 3.40649f, -4.29478f),
     glm::vec3(-8.61112f, 3.45869f, -4.35868f),
 	glm::vec3(14.7265f, 18.1351f, 23.0913f)
 };
+/*
+glm::vec3 pointLightPositions2[] = {
+	//glm::vec3()
+};
+*/
 
 GLuint program, screenProgram;
 
@@ -383,7 +388,8 @@ static void setUniformVec3(GLuint program, const std::string &name, const glm::v
 	glUniform3f(loc, vec.x, vec.y, vec.z);
 }
 
-static void setUniform2fv(unsigned int program, const std::string &name, const float* fvec, const int count) {
+static void setUniform2fv(unsigned int program, const std::string &name, const float* fvec, const int count)
+{
 	// This line can be ignore. But, if you have multiple shader program
 	// You must check if currect binding is the one you want
 	glUseProgram(program);
@@ -476,36 +482,29 @@ void frameBuffer_init()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-static void setupLighting(GLuint program) {
-	setUniformVec3(program, "viewPos", camPos);
-	setUniformVec3(program, "pointLights[0].position", pointLightPositions[0]);
-	setUniformVec3(program, "pointLights[0].ambient" , glm::vec3(0.7f));
-	setUniformVec3(program, "pointLights[0].diffuse" , glm::vec3(1.5f));
-	setUniformVec3(program, "pointLights[0].specular", glm::vec3(1.0f));
-	setUniformFloat(program, "pointLights[0].constant", 1.0f);
-	setUniformFloat(program, "pointLights[0].linear", 0.009);
-	setUniformFloat(program, "pointLights[0].quadratic", 0.001);
+static void setupLighting(int LightNo) {
+	glUseProgram(program);
+	if (LightNo == 1) {
+		for (int i = 0; i < 3; i++) {
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].position", pointLightPositions1[i]);
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].ambient" , glm::vec3(0.4f));
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].diffuse" , glm::vec3(0.7f));
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].specular", glm::vec3(1.0f));
+			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].constant", 1.0f);
+			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].linear", 0.009);
+			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].quadratic", 0.0032);
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].color", glm::vec3(1.0f, 0.9f, 0.875f));
+			setUniformFloat(program, "PointLight_Count", 3);
+		}
+	}
+	else if (LightNo == 2) {
 
-	setUniformVec3(program, "pointLights[1].position", pointLightPositions[1]);
-	setUniformVec3(program, "pointLights[1].ambient" , glm::vec3(0.7f));
-	setUniformVec3(program, "pointLights[1].diffuse" , glm::vec3(1.5f));
-	setUniformVec3(program, "pointLights[1].specular", glm::vec3(1.0f));
-	setUniformFloat(program, "pointLights[1].constant", 1.0f);
-	setUniformFloat(program, "pointLights[1].linear", 0.009);
-	setUniformFloat(program, "pointLights[1].quadratic", 0.001);
-
-	setUniformVec3(program, "pointLights[2].position", pointLightPositions[2]);
-	setUniformVec3(program, "pointLights[2].ambient" , glm::vec3(0.7f));
-	setUniformVec3(program, "pointLights[2].diffuse" , glm::vec3(1.5f));
-	setUniformVec3(program, "pointLights[2].specular", glm::vec3(1.0f));
-	setUniformFloat(program, "pointLights[2].constant", 1.0f);
-	setUniformFloat(program, "pointLights[2].linear", 0.009);
-	setUniformFloat(program, "pointLights[2].quadratic", 0.001);
-
+	}
 	setUniformFloat(program, "material.shininess", 32);
 }
 
-static void render(Model ourmodel) {
+static void render(Model ourmodel)
+{
     /********* 1. Switch to framebuffer, compute CoC and get the depth map*********/
     if(blur){
 		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
@@ -665,11 +664,13 @@ int main(int argc, char *argv[])
     screenProgram = setup_shader(readfile("post_vs.txt").c_str(), readfile("post_fs.txt").c_str());
     glUseProgram(program);
 
-	//Model ourmodel("/Users/jordansu/CGproject/dx3_1979_libraryset.obj");
 	Model ourmodel(argv[1]);
 
-    //initialize frameBuffer
+    // Initialize frameBuffer
     frameBuffer_init();
+
+	// Setup Lighting
+	setupLighting(1);
 
 	float last, lastSecond, timer;
 	last = lastSecond = glfwGetTime();
@@ -684,6 +685,7 @@ int main(int argc, char *argv[])
 	std::cout << "Focus Distance : " << focusDis << std::endl;
 
 	glfwSetCursorPos(window, 400.0, 300.0);
+
 	while (!glfwWindowShouldClose(window))
 	{ //program will keep drawing here until you close the window
 		timer = glfwGetTime() - lastSecond;
@@ -705,7 +707,8 @@ int main(int argc, char *argv[])
 		setUniformMat4(program, "view",
 			glm::lookAt(camPos, camPos + camFront, glm::vec3(0.0f, 1.0f, 0.0f)));
 		setUniformMat4(program, "model", glm::scale(model, glm::vec3(6.0f, 6.0f, 6.0f)));
-		setupLighting(program);
+		setUniformVec3(program, "viewPos", camPos);
+
 
 		// pass cameara settings
 		setUniformFloat(program,"focalLen",focalLen);
