@@ -44,8 +44,11 @@ uniform float focalLen;
 uniform float Dlens;
 uniform float focusDis;
 
+uniform float mousePosPixX;
+uniform float mousePosPixY;
+
 float maxCoC = 0.024;
-float scale = 0.5; // used to adjust the depth to real world length
+float scale = 10; // used to adjust the depth to real world length
 float sceneRange = 99;
 float snesorHeight = 0.024f;
 
@@ -55,9 +58,9 @@ vec3 toneMapping(vec3 color);
 void main()
 {
     
-    //=============== CoC ========================//
+    //=============== CoC =======================//
 
-    //float pixCoC = abs(Dlens * focalLen * (focusDis - fDepth/100) / (focusDis * (fDepth/100 - focalLen)));
+    //float pixCoC = abs(Dlens * focalLen * (focusDis - fDepth/scale) / (focusDis * (fDepth/scale - focalLen)));
     float pixCoC = abs(Dlens * focalLen * (fDepth/scale - focusDis) / (fDepth/scale * (focusDis - focalLen))); // assume 1 pixel is one cm;
     //float blur = clamp(pixCoC * scale/ maxCoC , 0.0, 1.0);
 

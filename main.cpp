@@ -17,14 +17,14 @@
 // Pixel should be double on Retina screen
 // So we will check if this is run on OSX
 #ifdef __APPLE__
-	#define PIXELMULTI 2.0
+	#define PIXELMULTI 1.0
 #else
 	#define PIXELMULTI 1.0
 #endif
 
 double xpos,ypos;	// Mouse Pos
 
-const GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+const GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT4};
 
 GLfloat deltaTime;  // To synchronize camera moving speed
 
@@ -41,9 +41,9 @@ GLfloat screenVertices[] = {
 };
 
 // camera setting ( in m )
-float focalLen = 0.050f; //focal length
-float Dlens = 0.001f; // lens diameter
-float focusDis = 0.100f; // current focus distance
+float focalLen = 0.06f; //focal length
+float aperture = 8.0f; // aperture diameter = f/Dlens (like real camera notation)
+float focusDis = 0.1f; // current focus distance
 
 bool blur = false;
 float cocView = 0.0f;
@@ -63,7 +63,7 @@ glm::vec3 camFront = glm::vec3(-10.0,-10.0,-10.0);
 glm::vec3 camSide;
 char current_coord = 'x';
 
-GLuint frameBuffer, texColorBuffer, texColorBuffer2, texDepthBuffer;
+GLuint frameBuffer, texColorBuffer, texColorBuffer2, texColorBuffer3, texColorBuffer4, texDepthBuffer;
 GLuint screenVAO, screenVBO;
 
 float offsetRadius = 0.5; // make offsets (for polar coordinate)
@@ -140,10 +140,18 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		Zoom += 1.0f;
 	else if (key == GLFW_KEY_EQUAL && action == GLFW_PRESS)
 		Zoom -= 1.0f;
-	else if (key == GLFW_KEY_COMMA && action == GLFW_PRESS)
-		focusDis -= 0.01f;
+	else if (key == GLFW_KEY_COMMA && action == GLFW_PRESS) 
+		focusDis -= 0.05f;
 	else if (key == GLFW_KEY_PERIOD && action == GLFW_PRESS)
-		focusDis += 0.01f;
+		focusDis += 0.05f;
+	else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) 
+		focalLen -= 0.005f;
+	else if (key == GLFW_KEY_UP && action == GLFW_PRESS)
+		focalLen += 0.005f;
+	else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) 
+		aperture -= 1.0f;
+	else if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
+		aperture += 1.0f;
 	else if (key == GLFW_KEY_B && action == GLFW_PRESS)
 		blur = !blur;
 	else if (key == GLFW_KEY_C && action == GLFW_PRESS)
@@ -161,7 +169,9 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 			useHDR = true;
 		}
 	}
-	std::cout << "Aperture Size : " << Dlens << std::endl;
+	//if(focalLen < 0.02)
+	//	focalLen = 0.02;
+	std::cout << "Aperture Size : " << aperture << std::endl;
 	std::cout << "Focal Length : " << focalLen << std::endl;
 	std::cout << "Focus Distance : " << focusDis << std::endl;
 }
@@ -411,10 +421,14 @@ void frameBuffer_init()
 	// Generate texture buffer and bind it to framebuffer
     texColorBuffer = generateAttachmentTexture(false, false);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
-    texDepthBuffer = generateAttachmentTexture(false, false);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texDepthBuffer, 0);
     texColorBuffer2 = generateAttachmentTexture(false, false);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, texColorBuffer2, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texColorBuffer2, 0);
+	texColorBuffer3 = generateAttachmentTexture(false, false);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, texColorBuffer3, 0);
+    texColorBuffer4 = generateAttachmentTexture(false, false);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, texColorBuffer4, 0);
+    texDepthBuffer = generateAttachmentTexture(false, false);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, texDepthBuffer, 0);
 
 	// Generate render buffer and bind it to framebuffer
 	GLuint rbo;
@@ -470,7 +484,7 @@ static void render(Model ourmodel) {
 	/**********************************************************/
 
 	/********* 2. Switch back to default and clear buffer *********/
-	glDrawBuffer(GL_COLOR_ATTACHMENT2); 	// set the output buffer
+	glDrawBuffer(GL_COLOR_ATTACHMENT1); 	// set the output buffer
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glDisable(GL_DEPTH_TEST);
@@ -587,7 +601,7 @@ int main(int argc, char *argv[])
 	GLfloat currentTime;
 	int fps=0;
 
-	std::cout << "Aperture Size : " << Dlens << std::endl;
+	std::cout << "Aperture Size : " << aperture << std::endl;
 	std::cout << "Focal Length : " << focalLen << std::endl;
 	std::cout << "Focus Distance : " << focusDis << std::endl;
 
@@ -617,10 +631,11 @@ int main(int argc, char *argv[])
 
 		// pass cameara settings
 		setUniformFloat(program,"focalLen",focalLen);
-		setUniformFloat(program,"Dlens",Dlens);
+		setUniformFloat(program,"Dlens",focalLen/aperture);
 		setUniformFloat(program,"focusDis",focusDis);
 
-
+		setUniformFloat(program,"mousePosPixX",xpos);
+		setUniformFloat(program,"mousePosPixY",ypos);
 
         render(ourmodel);
 		glfwSwapBuffers(window);	// To swap the color buffer in this game loop
@@ -629,8 +644,8 @@ int main(int argc, char *argv[])
 		fps++;
 		if(timer > 1.0)
 		{
-			std::cout << camPos.x << " " << camPos.y << " " << camPos.z << std::endl;
-			std::cout << (double)fps/timer << std::endl;
+			//std::cout << camPos.x << " " << camPos.y << " " << camPos.z << std::endl;
+			//std::cout << (double)fps/timer << std::endl;
 			fps = 0;
 			lastSecond = glfwGetTime();
 		}
