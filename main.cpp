@@ -91,7 +91,8 @@ glm::vec3 pointLightPositions2[] = {
 	glm::vec3(21.0562f, 40.1655f, -21.7813f),
 	glm::vec3(-20.1564f, 40.5234f, -13.8102f),
 	glm::vec3(20.8512f, 38.5168f, 33.0789f),
-	glm::vec3(-17.3721f, 40.2367f, 36.3115f)
+	glm::vec3(-17.3721f, 40.2367f, 36.3115f),
+	glm::vec3(22.3562f, 21.5342f, 26.2914f)
 };
 
 
@@ -498,7 +499,7 @@ static void setupLighting(int LightNo) {
 	if (LightNo == 1) {
 		for (int i = 0; i < 3; i++) {
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].position", pointLightPositions1[i]);
-			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].ambient" , glm::vec3(0.7f));
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].ambient" , glm::vec3(0.4f));
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].diffuse" , glm::vec3(0.7f));
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].specular", glm::vec3(1.0f));
 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].constant", 1.0f);
@@ -509,16 +510,16 @@ static void setupLighting(int LightNo) {
 		}
 	}
 	else if (LightNo == 2) {
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 5; i++) {
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].position", pointLightPositions2[i]);
-			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].ambient" , glm::vec3(0.7f));
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].ambient" , glm::vec3(0.4f));
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].diffuse" , glm::vec3(0.7f));
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].specular", glm::vec3(1.0f));
 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].constant", 1.0f);
 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].linear", 0.009);
 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].quadratic", 0.0032);
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].color", glm::vec3(1.0f, 0.9f, 0.875f));
-			setUniformFloat(program, "PointLight_Count", 4);
+			setUniformFloat(program, "PointLight_Count", 5);
 		}
 	}
 	setUniformFloat(program, "material.shininess", 32);
