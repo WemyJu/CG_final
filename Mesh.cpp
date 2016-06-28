@@ -38,7 +38,8 @@ void Mesh::Draw(GLuint program)
         glUniform3f(glGetUniformLocation(program, "mat_diffuse"), mat.x, mat.y, mat.z);
         mat = this->textures[i].mat_specular;
         glUniform3f(glGetUniformLocation(program, "mat_specular"), mat.x, mat.y, mat.z);
-        
+        glUniform1f(glGetUniformLocation(program, "transparent"), this->textures[i].tr);
+
         glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
     }
 

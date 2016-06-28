@@ -25,6 +25,8 @@ struct Texture {
     glm::vec3 mat_ambient;
     glm::vec3 mat_diffuse;
     glm::vec3 mat_specular;
+
+    float tr;
 };
 
 class Mesh {

@@ -92,7 +92,7 @@ glm::vec3 pointLightPositions2[] = {
 	glm::vec3(-20.1564f, 40.5234f, -13.8102f),
 	glm::vec3(20.8512f, 38.5168f, 33.0789f),
 	glm::vec3(-17.3721f, 40.2367f, 36.3115f),
-	glm::vec3(22.3562f, 21.5342f, 26.2914f)
+	glm::vec3(22.3562f, 21.5342f, 15.2914f)
 };
 
 
@@ -174,8 +174,18 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		aperture -= 1.0f;
 	else if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
 		aperture += 1.0f;
-	else if (key == GLFW_KEY_B && action == GLFW_PRESS)
+	else if (key == GLFW_KEY_B && action == GLFW_PRESS) {
+		if (blur == false) {
+			setUniformFloat(program, "isBlur", 1.0f);
+			glDisable(GL_BLEND);
+		}
+		else {
+			setUniformFloat(program, "isBlur", 0.0f);
+			glEnable(GL_BLEND);
+		}
 		blur = !blur;
+	}
+
 	else if (key == GLFW_KEY_4 && action == GLFW_PRESS){
 		currentShapeAng.clear();
 		currentShapeAng.push_back(shapeAngles[square]);
@@ -500,27 +510,36 @@ static void setupLighting(int LightNo) {
 		for (int i = 0; i < 3; i++) {
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].position", pointLightPositions1[i]);
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].ambient" , glm::vec3(0.4f));
-			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].diffuse" , glm::vec3(0.7f));
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].diffuse" , glm::vec3(0.98f));
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].specular", glm::vec3(1.0f));
 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].constant", 1.0f);
 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].linear", 0.009);
 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].quadratic", 0.0032);
-			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].color", glm::vec3(1.0f, 0.9f, 0.875f));
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].color", glm::vec3(0.8f, 0.75f, 0.73f));
 			setUniformFloat(program, "PointLight_Count", 3);
 		}
 	}
 	else if (LightNo == 2) {
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 4; i++) {
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].position", pointLightPositions2[i]);
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].ambient" , glm::vec3(0.4f));
-			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].diffuse" , glm::vec3(0.7f));
-			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].specular", glm::vec3(1.0f));
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].diffuse" , glm::vec3(3.5f));
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].specular", glm::vec3(2.0f));
 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].constant", 1.0f);
 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].linear", 0.009);
 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].quadratic", 0.0032);
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].color", glm::vec3(1.0f, 0.9f, 0.875f));
-			setUniformFloat(program, "PointLight_Count", 5);
+			setUniformFloat(program, "PointLight_Count", 4);
 		}
+		setUniformVec3(program, "pointLights[4].position", pointLightPositions2[4]);
+		setUniformVec3(program, "pointLights[4].ambient" , glm::vec3(0.4f));
+		setUniformVec3(program, "pointLights[4].diffuse" , glm::vec3(0.2f));
+		setUniformVec3(program, "pointLights[4].specular", glm::vec3(0.6f));
+		setUniformFloat(program, "pointLights[4].constant", 1.0f);
+		setUniformFloat(program, "pointLights[4].linear", 0.009);
+		setUniformFloat(program, "pointLights[4].quadratic", 0.0032);
+		setUniformVec3(program, "pointLights[4].color", glm::vec3(1.0f, 0.9f, 0.875f));
+		setUniformFloat(program, "PointLight_Count", 5);
 	}
 	setUniformFloat(program, "material.shininess", 32);
 }
@@ -670,6 +689,8 @@ int main(int argc, char *argv[])
 	glfwSwapInterval(1);
 
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
 
@@ -701,6 +722,8 @@ int main(int argc, char *argv[])
 
 	currentShapeAng.push_back(shapeAngles[square]);
 	currentShape = square;
+
+	setUniformFloat(program, "isBlur", 0.0f);
 
 	std::cout << "Aperture Size : " << aperture << std::endl;
 	std::cout << "Focal Length : " << focalLen << std::endl;

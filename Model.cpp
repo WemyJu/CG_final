@@ -130,6 +130,10 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
             texture.mat_diffuse = glm::vec3(color.r, color.g, color.b);
             mat->Get(AI_MATKEY_COLOR_SPECULAR, color);
             texture.mat_specular = glm::vec3(color.r, color.g, color.b);
+            float trans;
+            mat->Get(AI_MATKEY_OPACITY, trans);
+            texture.tr = trans;
+            std::cout << texture.tr << std::endl;
 
             textures.push_back(texture);
             this->textures_loaded.push_back(texture);
