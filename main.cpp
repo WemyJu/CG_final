@@ -33,6 +33,7 @@ enum shapes{
 const glm::vec2 shapeAngles[]={glm::vec2(0,PI/2.0f),glm::vec2(PI/4.0f,PI*3.0f/4.0f),glm::vec2(0,PI/4.0f)};
 std::vector<glm::vec2> currentShapeAng;
 int currentShape;
+int currentLight = 1;
 
 GLfloat deltaTime;  // To synchronize camera moving speed
 
@@ -85,11 +86,14 @@ glm::vec3 pointLightPositions1[] = {
     glm::vec3(-8.61112f, 3.45869f, -4.35868f),
 	glm::vec3(14.7265f, 18.1351f, 23.0913f)
 };
-/*
+
 glm::vec3 pointLightPositions2[] = {
-	//glm::vec3()
+	glm::vec3(21.0562f, 40.1655f, -21.7813f),
+	glm::vec3(-20.1564f, 40.5234f, -13.8102f),
+	glm::vec3(20.8512f, 38.5168f, 33.0789f),
+	glm::vec3(-17.3721f, 40.2367f, 36.3115f)
 };
-*/
+
 
 GLuint program, screenProgram;
 
@@ -117,6 +121,7 @@ void makeSampleOffsets(float angle)
 	}
 }
 static void setUniformFloat(GLuint program, const std::string &name, const float &value);
+static void setupLighting(int LightNo);
 
 static void error_callback(int error, const char* description)
 {
@@ -190,6 +195,12 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		currentShapeAng.push_back(shapeAngles[square]);
 		currentShapeAng.push_back(shapeAngles[diamond]);
 		currentShape = star;
+	}
+	else if (key == GLFW_KEY_9 && action == GLFW_PRESS){
+		setupLighting(1);
+	}
+	else if (key == GLFW_KEY_0 && action == GLFW_PRESS){
+		setupLighting(2);
 	}
 	else if (key == GLFW_KEY_C && action == GLFW_PRESS)
 		if(cocView==0.0)
@@ -487,7 +498,7 @@ static void setupLighting(int LightNo) {
 	if (LightNo == 1) {
 		for (int i = 0; i < 3; i++) {
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].position", pointLightPositions1[i]);
-			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].ambient" , glm::vec3(0.4f));
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].ambient" , glm::vec3(0.7f));
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].diffuse" , glm::vec3(0.7f));
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].specular", glm::vec3(1.0f));
 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].constant", 1.0f);
@@ -498,7 +509,17 @@ static void setupLighting(int LightNo) {
 		}
 	}
 	else if (LightNo == 2) {
-
+		for (int i = 0; i < 4; i++) {
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].position", pointLightPositions2[i]);
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].ambient" , glm::vec3(0.7f));
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].diffuse" , glm::vec3(0.7f));
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].specular", glm::vec3(1.0f));
+			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].constant", 1.0f);
+			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].linear", 0.009);
+			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].quadratic", 0.0032);
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].color", glm::vec3(1.0f, 0.9f, 0.875f));
+			setUniformFloat(program, "PointLight_Count", 4);
+		}
 	}
 	setUniformFloat(program, "material.shininess", 32);
 }
@@ -670,7 +691,7 @@ int main(int argc, char *argv[])
     frameBuffer_init();
 
 	// Setup Lighting
-	setupLighting(1);
+	setupLighting(currentLight);
 
 	float last, lastSecond, timer;
 	last = lastSecond = glfwGetTime();

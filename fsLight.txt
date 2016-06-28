@@ -22,7 +22,7 @@ struct PointLight {
     vec3 color;
 };
 
-#define NR_POINT_LIGHTS 3
+#define NR_POINT_LIGHTS 4
 
 in vec3 fragPosition;
 in vec3 Normal;
@@ -166,7 +166,7 @@ vec3 CalcPointLight(PointLight light, Material mat, vec3 normal, vec3 fragPos, v
     diffuse *= attenuation;
     specular *= attenuation;
 
-    return ambient + LdotN * (diffuse + specular);
+    return light.color * (ambient + LdotN * (diffuse + specular));
     float diffValue = 0.2;
     //return attenuation * LdotN * (diff + (1-diff) * specular ) + attenuation * ambient;
     //return (ambient + diffuse);
