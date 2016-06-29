@@ -30,6 +30,8 @@ void main()
     vec4 centerColor = texture(screenTexture, TexCoords);
     float totalContribution = 1.0f;
     vec4 centerDepthBlur = texture(depthBlurTexture, TexCoords);
+
+    
 /*
     float sizeCoC = centerDepthBlur.y * maxCoC;
     for(int i=0; i<NUM_DOF_TAPS; i++){

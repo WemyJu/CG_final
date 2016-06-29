@@ -86,7 +86,7 @@ Ke 0.059257 0.051381 0.023484
 Ni 1.000000
 d 1.000000
 illum 1
-map_Kd textures/Carpet0029_2_S.jpg
+map_Kd textures/orange-carpet-texture.jpg
 map_Bump  textures/Carpet0029_2_S-n.jpg
 map_Tr  textures/Carpet0029_2_S-s.jpg
 
@@ -97,7 +97,7 @@ Kd 0.629597 0.640000 0.586030
 Ks 0.000000 0.000000 0.000000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
-d 0.400000
+d 0.900000
 illum 1
 map_Kd textures/FabricPlain0011_M.jpg
 map_Bump -bm 0.300000 textures/FabricPlain0011_M-n.jpg
@@ -113,7 +113,19 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 1
+map_Kd textures/screen.jpg
+
+newmtl espelho1
+Ns 186.274510
+Ka 1.000000 1.000000 1.000000
+Kd 0.000000 0.000000 0.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
 map_Kd textures/WoodFine0023_M.jpg
+
 
 newmtl janela_metal
 Ns 292.156863
@@ -130,7 +142,7 @@ map_Bump -bm 0.300000 textures/noise01-n.png
 newmtl janela_vidro
 Ns 292.156863
 Ka 0.100000 0.100000 0.100000
-Kd 0.526806 0.548756 0.548756
+Kd 0.926806 0.848756 0.848756
 Ks 0.000000 0.000000 0.000000
 Ke 0.000000 0.000000 0.000000
 Ni 1.520000
@@ -141,13 +153,13 @@ map_Kd textures/noise01.png
 newmtl livro_capa
 Ns 96.078431
 Ka 0.050000 0.050000 0.050000
-Kd 0.021972 0.058586 0.051830
+Kd 0.051972 0.078586 0.071830
 Ks 0.000000 0.000000 0.000000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 1
-map_Kd textures/blender_logo.png
+map_Kd textures/book-cover-texture.jpg
 
 newmtl livro_folhas
 Ns 154.901961
@@ -158,7 +170,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Kd textures/blender_logo.png
+map_Kd textures/book-cover-texture.jpg
 map_Bump -bm 2.000000 textures/linhas-n.jpg
 
 newmtl madeira_clara
@@ -182,7 +194,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 1
-map_Kd textures/WoodFine0023_M.jpg
+map_Kd textures/Screen-Texture-500x336.jpg
 map_Bump -bm 0.002000 textures/WoodFine0023_M-n.jpg
 
 newmtl parede_branca
@@ -200,13 +212,13 @@ map_Bump -bm 0.400000 textures/walls - 001-2-n.jpg
 newmtl parede_cor
 Ns 66.666667
 Ka 1.000000 1.000000 1.000000
-Kd 0.539069 0.415335 0.121817
+Kd 0.200000 0.200000 0.200000
 Ks 0.000000 0.000000 0.000000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 1
-map_Kd textures/Paper0039_M.jpg
+map_Kd textures/wallpaper.jpg
 map_Bump -bm 0.010000 textures/Paper0039_M-n.jpg
 
 newmtl pedras1
@@ -248,13 +260,13 @@ map_Bump -bm 0.100000 textures/RockSmooth0072_7_S-n.jpg
 newmtl plantas
 Ns 96.078431
 Ka 1.000000 1.000000 1.000000
-Kd 0.041772 0.011306 0.007575
+Kd 0.401772 0.401306 0.407575
 Ks 0.000000 0.000000 0.000000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 1
-map_Kd textures/barks - 002.jpg
+map_Kd textures/mjzU4oc.jpg
 map_Bump  textures/barks - 002-n.jpg
 
 newmtl prato
