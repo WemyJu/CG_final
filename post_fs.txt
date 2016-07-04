@@ -3,7 +3,8 @@
 in vec2 TexCoords;
 //out vec4 color;
 layout(location=0) out vec4 color;
-layout(location=1) out vec4 color2;
+layout(location=1) out vec4 vDOF;
+layout(location=2) out vec4 color2;
 
 uniform vec2 offsetData[13];
 uniform vec2 offsetData2[13];
@@ -23,7 +24,7 @@ const float dy = 0.5f/800.0f;
 
 // these are used to tuned the "pixel-bleeding" fix
 const float bleedingBias = 0.02f;
-const float bleedingMul = 30.0f;
+const float bleedingMul = 300.0f;
 
 void main()
 {
@@ -31,7 +32,8 @@ void main()
     float totalContribution = 1.0f;
     vec4 centerDepthBlur = texture(depthBlurTexture, TexCoords);
 
-    
+
+    vec4 centerColor2 = texture(screenTexture2, TexCoords);
 /*
     float sizeCoC = centerDepthBlur.y * maxCoC;
     for(int i=0; i<NUM_DOF_TAPS; i++){
@@ -47,9 +49,11 @@ void main()
 
 	// for finding the weighted average
 	vec4 colorSum = centerColor;
+	float cocSum = centerDepthBlur.y;
 	float totalWeight = 1.0f;
 
-	vec4 colorSum2 = centerColor;
+	vec4 colorSum2 = centerColor2;
+	float cocSum2 = centerDepthBlur.z;
 	float totalWeight2 = 1.0f;
 
 	// for each sampler
@@ -57,7 +61,7 @@ void main()
 		vec2 offset = offsetData[i];
 
 		// calculate the coordinates for this sampler
-		vec2 sampleCoords = TexCoords + offset * centerColor.a*1.2;
+		vec2 sampleCoords = TexCoords + offset * centerDepthBlur.y*1.2;
 
 		// do the texture sampling for this sample
 		vec4 samplePixel = texture(screenTexture, sampleCoords);
@@ -67,58 +71,68 @@ void main()
 		// Prevent focused foreground objects from bleeding onto blurry backgrounds
 		// but allow focused backgrounf objects to bleed onto blurry foregrounds
 		//===========================================================================
-		float weight = samplePixel.a * bleedingMul ;
-		weight = sampleDepthBlur.x < centerDepthBlur.x ? weight :((centerColor.a < samplePixel.a + bleedingBias) ? weight : 0.0f);
+		float weight = sampleDepthBlur.y * bleedingMul ;
+		weight = sampleDepthBlur.x < centerDepthBlur.x ? weight :((centerDepthBlur.y < sampleDepthBlur.y + bleedingBias) ? weight : 0.0f);
 		weight = clamp( weight, 0.0, 1.0 );
 		//===========================================================================
 
 		// add this sample to the wighted average
 		colorSum = colorSum  + samplePixel * weight;
+		cocSum = cocSum+sampleDepthBlur.y * weight;
 		totalWeight = totalWeight + weight;
 
-		if(complex > 1.0f){
+		if(complex >= 1.0f){
 			offset = offsetData2[i];
 
 			// calculate the coordinates for this sampler
-			sampleCoords = TexCoords + offset * centerColor.a*1.2;
+			sampleCoords = TexCoords + offset * centerDepthBlur.z*1.2;
 
 			// do the texture sampling for this sample
-			samplePixel = texture(screenTexture, sampleCoords);
+			samplePixel = texture(screenTexture2, sampleCoords);
 			sampleDepthBlur = texture(depthBlurTexture, sampleCoords);
 
 			//===========================================================================
 			// Prevent focused foreground objects from bleeding onto blurry backgrounds
 			// but allow focused backgrounf objects to bleed onto blurry foregrounds
 			//===========================================================================
-			weight = samplePixel.a * bleedingMul ;
-			weight = sampleDepthBlur.x < centerDepthBlur.x ? weight :((centerColor.a < samplePixel.a + bleedingBias) ? weight : 0.0f);
+			weight = sampleDepthBlur.z * bleedingMul ;
+			weight = sampleDepthBlur.x < centerDepthBlur.x ? weight :((centerDepthBlur.z < sampleDepthBlur.z + bleedingBias) ? weight : 0.0f);
 			weight = clamp( weight, 0.0, 1.0 );
 			//===========================================================================
 
 			// add this sample to the wighted average
 			colorSum2 = colorSum2  + samplePixel * weight;
+			cocSum2 = cocSum2+sampleDepthBlur.z * weight;
 			totalWeight2 = totalWeight2 + weight;
 		}
 
 	}
 
 	if(cocView == 1.0f)
-		color = vec4(centerDepthBlur.y/0.024,centerDepthBlur.y/0.024,centerDepthBlur.y/0.024,0.0);
+		color = vec4(centerDepthBlur.a/0.024,centerDepthBlur.a/0.024,centerDepthBlur.a/0.024,0.0);
         //color = vec4(centerDepthBlur.x,centerDepthBlur.x,centerDepthBlur.x,0.0);
 	else{
 		color = colorSum / totalWeight;
 
-		color2 = colorSum2 / totalWeight2; // has no effect with rendering simple aperture shape
+		color2 = colorSum2 / totalWeight2; // has no effect while rendering simple aperture shape
 
-		if(complex == 2.0f)
+		//color2 = vec4(1.0 ,0.0,1.0,0.0);
+
+		if(complex == 2.0f){
 			color = max(color,color2);
-
+			//color = centerColor2;
+		}
 	}
+
+
+
+	vDOF = vec4(centerDepthBlur.x,cocSum/totalWeight,cocSum2/totalWeight2,centerDepthBlur.a);
+	//vDOF = vec4(centerDepthBlur.x,centerDepthBlur.y,centerDepthBlur.z,centerDepthBlur.a);
 
 	//color = colorSum / totalWeight;
 	//color = centerDepthBlur;
 	//color = vec4(centerDepthBlur.x,centerDepthBlur.x,centerDepthBlur.x,0.0);
 	//color = vec4(centerDepthBlur.y,centerDepthBlur.y,centerDepthBlur.y,0.0);
-	//color = vec4(1.0 ,1.0,1.0,0.0);
+	//color = vec4(1.0 ,0.0,1.0,0.0);
 	//color = centerColor;
 }
