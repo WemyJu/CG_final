@@ -17,15 +17,16 @@
 // Pixel should be double on Retina screen
 // So we will check if this is run on OSX
 #ifdef __APPLE__
-	#define PIXELMULTI 2.0
+	#define PIXELMULTI 1.0
 #else
 	#define PIXELMULTI 1.0
 #endif
 
 double xpos,ypos;	// Mouse Pos
 
-const GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT4};
-const GLenum buffers2[] = {GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
+const GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT3};
+const GLenum buffers2[] = {GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT4};
+const GLenum buffers3[] = {GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT4,GL_COLOR_ATTACHMENT2};
 enum shapes{
 	square, diamond, parallel, star
 };
@@ -33,7 +34,6 @@ enum shapes{
 const glm::vec2 shapeAngles[]={glm::vec2(0,PI/2.0f),glm::vec2(PI/4.0f,PI*3.0f/4.0f),glm::vec2(0,PI/4.0f)};
 std::vector<glm::vec2> currentShapeAng;
 int currentShape;
-int currentLight = 1;
 
 GLfloat deltaTime;  // To synchronize camera moving speed
 
@@ -74,7 +74,7 @@ char current_coord = 'x';
 
 //*****************
 // texColorBuffer : first pass
-GLuint frameBuffer, texColorBuffer, texColorBuffer2, texColorBuffer3, texColorBuffer4, texDepthBuffer;
+GLuint frameBuffer, texColorBuffer, texColorBuffer2, texColorBuffer3, texDepthBuffer, texDepthBuffer2;
 GLuint screenVAO, screenVBO;
 
 float offsetRadius = 0.5; // make offsets (for polar coordinate)
@@ -86,15 +86,11 @@ glm::vec3 pointLightPositions1[] = {
     glm::vec3(-8.61112f, 3.45869f, -4.35868f),
 	glm::vec3(14.7265f, 18.1351f, 23.0913f)
 };
-
+/*
 glm::vec3 pointLightPositions2[] = {
-	glm::vec3(21.0562f, 40.1655f, -21.7813f),
-	glm::vec3(-20.1564f, 40.5234f, -13.8102f),
-	glm::vec3(20.8512f, 38.5168f, 33.0789f),
-	glm::vec3(-17.3721f, 40.2367f, 36.3115f),
-	glm::vec3(22.3562f, 21.5342f, 15.2914f)
+	//glm::vec3()
 };
-
+*/
 
 GLuint program, screenProgram;
 
@@ -122,7 +118,6 @@ void makeSampleOffsets(float angle)
 	}
 }
 static void setUniformFloat(GLuint program, const std::string &name, const float &value);
-static void setupLighting(int LightNo);
 
 static void error_callback(int error, const char* description)
 {
@@ -174,18 +169,8 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		aperture -= 1.0f;
 	else if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
 		aperture += 1.0f;
-	else if (key == GLFW_KEY_B && action == GLFW_PRESS) {
-		if (blur == false) {
-			setUniformFloat(program, "isBlur", 1.0f);
-			glDisable(GL_BLEND);
-		}
-		else {
-			setUniformFloat(program, "isBlur", 0.0f);
-			glEnable(GL_BLEND);
-		}
+	else if (key == GLFW_KEY_B && action == GLFW_PRESS)
 		blur = !blur;
-	}
-
 	else if (key == GLFW_KEY_4 && action == GLFW_PRESS){
 		currentShapeAng.clear();
 		currentShapeAng.push_back(shapeAngles[square]);
@@ -206,12 +191,6 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		currentShapeAng.push_back(shapeAngles[square]);
 		currentShapeAng.push_back(shapeAngles[diamond]);
 		currentShape = star;
-	}
-	else if (key == GLFW_KEY_9 && action == GLFW_PRESS){
-		setupLighting(1);
-	}
-	else if (key == GLFW_KEY_0 && action == GLFW_PRESS){
-		setupLighting(2);
 	}
 	else if (key == GLFW_KEY_C && action == GLFW_PRESS)
 		if(cocView==0.0)
@@ -486,10 +465,10 @@ void frameBuffer_init()
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texColorBuffer2, 0);
 	texColorBuffer3 = generateAttachmentTexture(false, false);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, texColorBuffer3, 0);
-    texColorBuffer4 = generateAttachmentTexture(false, false);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, texColorBuffer4, 0);
     texDepthBuffer = generateAttachmentTexture(false, false);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, texDepthBuffer, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, texDepthBuffer, 0);
+    texDepthBuffer2 = generateAttachmentTexture(false, false);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, texDepthBuffer2, 0);
 
 	// Generate render buffer and bind it to framebuffer
 	GLuint rbo;
@@ -510,36 +489,17 @@ static void setupLighting(int LightNo) {
 		for (int i = 0; i < 3; i++) {
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].position", pointLightPositions1[i]);
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].ambient" , glm::vec3(0.4f));
-			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].diffuse" , glm::vec3(0.98f));
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].diffuse" , glm::vec3(0.7f));
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].specular", glm::vec3(1.0f));
 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].constant", 1.0f);
 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].linear", 0.009);
 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].quadratic", 0.0032);
-			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].color", glm::vec3(0.8f, 0.75f, 0.73f));
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].color", glm::vec3(1.0f, 0.9f, 0.875f));
 			setUniformFloat(program, "PointLight_Count", 3);
 		}
 	}
 	else if (LightNo == 2) {
-		for (int i = 0; i < 4; i++) {
-			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].position", pointLightPositions2[i]);
-			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].ambient" , glm::vec3(0.4f));
-			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].diffuse" , glm::vec3(3.5f));
-			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].specular", glm::vec3(2.0f));
-			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].constant", 1.0f);
-			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].linear", 0.009);
-			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].quadratic", 0.0032);
-			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].color", glm::vec3(1.0f, 0.9f, 0.875f));
-			setUniformFloat(program, "PointLight_Count", 4);
-		}
-		setUniformVec3(program, "pointLights[4].position", pointLightPositions2[4]);
-		setUniformVec3(program, "pointLights[4].ambient" , glm::vec3(0.4f));
-		setUniformVec3(program, "pointLights[4].diffuse" , glm::vec3(0.2f));
-		setUniformVec3(program, "pointLights[4].specular", glm::vec3(0.6f));
-		setUniformFloat(program, "pointLights[4].constant", 1.0f);
-		setUniformFloat(program, "pointLights[4].linear", 0.009);
-		setUniformFloat(program, "pointLights[4].quadratic", 0.0032);
-		setUniformVec3(program, "pointLights[4].color", glm::vec3(1.0f, 0.9f, 0.875f));
-		setUniformFloat(program, "PointLight_Count", 5);
+
 	}
 	setUniformFloat(program, "material.shininess", 32);
 }
@@ -559,6 +519,8 @@ static void render(Model ourmodel)
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     ourmodel.Draw(program);
 
     if(!blur)
@@ -567,14 +529,17 @@ static void render(Model ourmodel)
 
 	/********* 2. 2nd pass, blur in one direction *********/
 	if(currentShape >= star){
-		glDrawBuffers(2,buffers2);
+		glDrawBuffers(3,buffers3);
 	}
-	else
-		glDrawBuffer(GL_COLOR_ATTACHMENT1); 	// set the output buffer
+	else{
+		glDrawBuffers(2,buffers2); 	// set the output buffer
+		//glDrawBuffer(GL_COLOR_ATTACHMENT1); 	// set the output buffer
+	}
 
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
 
 	/*
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -607,6 +572,10 @@ static void render(Model ourmodel)
     	setUniform2fv(screenProgram, "offsetData2", sampleKernel, SAMPLECNT);
 
     	setUniformFloat(screenProgram,"complex",1.0f); // complex shape 2nd pass
+
+    	glActiveTexture(GL_TEXTURE2);
+    	glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+    	glUniform1i(glGetUniformLocation(screenProgram, "screenTexture2"), 2);
     }
     else
     	setUniformFloat(screenProgram,"complex",0.0f);
@@ -623,6 +592,7 @@ static void render(Model ourmodel)
     glClearColor(1.0f,1.0f,1.0f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glDisable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
 
     // setup the sample kernal
     makeSampleOffsets(currentShapeAng[0].y);
@@ -637,7 +607,7 @@ static void render(Model ourmodel)
     glUniform1i(glGetUniformLocation(screenProgram, "screenTexture"), 0);
 
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, texDepthBuffer);
+    glBindTexture(GL_TEXTURE_2D, texDepthBuffer2);
     glUniform1i(glGetUniformLocation(screenProgram, "depthBlurTexture"), 1);
 
     if(currentShape >=star){
@@ -689,8 +659,7 @@ int main(int argc, char *argv[])
 	glfwSwapInterval(1);
 
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	//glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
 
@@ -713,7 +682,7 @@ int main(int argc, char *argv[])
     frameBuffer_init();
 
 	// Setup Lighting
-	setupLighting(currentLight);
+	setupLighting(1);
 
 	float last, lastSecond, timer;
 	last = lastSecond = glfwGetTime();
@@ -722,8 +691,6 @@ int main(int argc, char *argv[])
 
 	currentShapeAng.push_back(shapeAngles[square]);
 	currentShape = square;
-
-	setUniformFloat(program, "isBlur", 0.0f);
 
 	std::cout << "Aperture Size : " << aperture << std::endl;
 	std::cout << "Focal Length : " << focalLen << std::endl;
