@@ -15,9 +15,9 @@
 #define PI 3.1415926535
 
 // Pixel should be double on Retina screen
-// So we will check if this is run on OSX
+// So you should assign PIXELMULTI 2.0 if your window looks weird
 #ifdef __APPLE__
-	#define PIXELMULTI 1.0
+	#define PIXELMULTI 2.0
 #else
 	#define PIXELMULTI 1.0
 #endif
@@ -27,9 +27,10 @@ double xpos,ypos;	// Mouse Pos
 const GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT3};
 const GLenum buffers2[] = {GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT4};
 const GLenum buffers3[] = {GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT4,GL_COLOR_ATTACHMENT2};
-enum shapes{
+enum shapes {
 	square, diamond, parallel, star
 };
+enum lightMode { bedroomLight , marketLight };
 
 const glm::vec2 shapeAngles[]={glm::vec2(0,PI/2.0f),glm::vec2(PI/4.0f,PI*3.0f/4.0f),glm::vec2(0,PI/4.0f)};
 std::vector<glm::vec2> currentShapeAng;
@@ -86,13 +87,20 @@ glm::vec3 pointLightPositions1[] = {
     glm::vec3(-8.61112f, 3.45869f, -4.35868f),
 	glm::vec3(14.7265f, 18.1351f, 23.0913f)
 };
-/*
+
 glm::vec3 pointLightPositions2[] = {
-	//glm::vec3()
+	glm::vec3(21.0562f, 40.1655f, -21.7813f),
+	glm::vec3(-20.1564f, 40.5234f, -13.8102f),
+	glm::vec3(20.8512f, 38.5168f, 33.0789f),
+	glm::vec3(-17.3721f, 40.2367f, 36.3115f),
+	glm::vec3(22.3562f, 21.5342f, 15.2914f)
 };
-*/
+
 
 GLuint program, screenProgram;
+
+static void setUniformFloat(GLuint program, const std::string &name, const float &value);
+static void setupLighting(int LightNo);
 
 void makeSampleOffsets(float angle)
 {
@@ -117,7 +125,6 @@ void makeSampleOffsets(float angle)
 		//std::cout << i << "(" << output.x << "," << output.y << ")" << std::endl;
 	}
 }
-static void setUniformFloat(GLuint program, const std::string &name, const float &value);
 
 static void error_callback(int error, const char* description)
 {
@@ -192,6 +199,12 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		currentShapeAng.push_back(shapeAngles[diamond]);
 		currentShape = star;
 	}
+	else if (key == GLFW_KEY_9 && action == GLFW_PRESS) {
+		setupLighting(bedroomLight);
+	}
+ 	else if (key == GLFW_KEY_0 && action == GLFW_PRESS) {
+ 		setupLighting(marketLight);
+ 	}
 	else if (key == GLFW_KEY_C && action == GLFW_PRESS)
 		if(cocView==0.0)
 			cocView = 1.0f;
@@ -485,7 +498,7 @@ void frameBuffer_init()
 
 static void setupLighting(int LightNo) {
 	glUseProgram(program);
-	if (LightNo == 1) {
+	if (LightNo == bedroomLight) {
 		for (int i = 0; i < 3; i++) {
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].position", pointLightPositions1[i]);
 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].ambient" , glm::vec3(0.4f));
@@ -494,12 +507,31 @@ static void setupLighting(int LightNo) {
 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].constant", 1.0f);
 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].linear", 0.009);
 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].quadratic", 0.0032);
-			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].color", glm::vec3(1.0f, 0.9f, 0.875f));
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].color", glm::vec3(0.8f, 0.75f, 0.73f));
 			setUniformFloat(program, "PointLight_Count", 3);
 		}
 	}
-	else if (LightNo == 2) {
-
+	else if (LightNo == marketLight) {
+		for (int i = 0; i < 4; i++) {
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].position", pointLightPositions2[i]);
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].ambient" , glm::vec3(0.4f));
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].diffuse" , glm::vec3(3.5f));
+			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].specular", glm::vec3(2.0f));
+ 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].constant", 1.0f);
+ 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].linear", 0.009);
+ 			setUniformFloat(program, "pointLights[" + std::to_string(i) + "].quadratic", 0.0032);
+ 			setUniformVec3(program, "pointLights[" + std::to_string(i) + "].color", glm::vec3(1.0f, 0.9f, 0.875f));
+ 			setUniformFloat(program, "PointLight_Count", 4);
+ 		}
+ 		setUniformVec3(program, "pointLights[4].position", pointLightPositions2[4]);
+ 		setUniformVec3(program, "pointLights[4].ambient" , glm::vec3(0.4f));
+ 		setUniformVec3(program, "pointLights[4].diffuse" , glm::vec3(0.2f));
+ 		setUniformVec3(program, "pointLights[4].specular", glm::vec3(0.6f));
+ 		setUniformFloat(program, "pointLights[4].constant", 1.0f);
+ 		setUniformFloat(program, "pointLights[4].linear", 0.009);
+ 		setUniformFloat(program, "pointLights[4].quadratic", 0.0032);
+ 		setUniformVec3(program, "pointLights[4].color", glm::vec3(1.0f, 0.9f, 0.875f));
+ 		setUniformFloat(program, "PointLight_Count", 5);
 	}
 	setUniformFloat(program, "material.shininess", 32);
 }
@@ -520,7 +552,7 @@ static void render(Model ourmodel)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     ourmodel.Draw(program);
 
     if(!blur)
@@ -533,19 +565,13 @@ static void render(Model ourmodel)
 	}
 	else{
 		glDrawBuffers(2,buffers2); 	// set the output buffer
-		//glDrawBuffer(GL_COLOR_ATTACHMENT1); 	// set the output buffer
 	}
 
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 
-	/*
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	*/
 
 	// pass the sample offset to shader
 	glUseProgram(screenProgram);
@@ -682,7 +708,7 @@ int main(int argc, char *argv[])
     frameBuffer_init();
 
 	// Setup Lighting
-	setupLighting(1);
+	setupLighting(bedroomLight);
 
 	float last, lastSecond, timer;
 	last = lastSecond = glfwGetTime();

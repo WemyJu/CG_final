@@ -22,7 +22,7 @@ struct PointLight {
     vec3 color;
 };
 
-#define NR_POINT_LIGHTS 3
+#define NR_POINT_LIGHTS 5
 
 in vec3 fragPosition;
 in vec3 Normal;
@@ -55,7 +55,7 @@ uniform float transparent;
 float maxCoC = 0.024;
 float scale = 10; // used to adjust the depth to real world length
 float sceneRange = 99;
-float snesorHeight = 0.024f;
+float sensorHeight = 0.024f;
 
 // Function prototypes
 vec3 CalcPointLight(PointLight light, Material mat, vec3 normal, vec3 fragPos, vec3 viewDir);
@@ -70,7 +70,7 @@ void main()
     //float blur = clamp(pixCoC * scale/ maxCoC , 0.0, 1.0);
 
 	// put Coc into a % of the image sensor height
-	float percentOfSensor = pixCoC/snesorHeight;
+	float percentOfSensor = pixCoC/sensorHeight;
 
 	//artificially clam % between 0 and max CoC
 	float  CoC = clamp(percentOfSensor,0.0f,maxCoC);
@@ -88,6 +88,7 @@ void main()
 
     if (useHDR == 1)
         result = toneMapping(result);
+
     color = vec4(result, transparent);
     //color = texture(material.texture_diffuse1, TexCoords);
     //color = vec4(Normal, 0.0f);
@@ -100,6 +101,7 @@ vec3 toneMapping(vec3 color)
 
     // Reinhard tone mapping
     vec3 mapped = hdrColor / (hdrColor + vec3(1.0));
+
     // Gamma correction
     mapped = pow(mapped, vec3(1.0 / gamma));
 
@@ -167,6 +169,5 @@ vec3 CalcPointLight(PointLight light, Material mat, vec3 normal, vec3 fragPos, v
     diffuse *= attenuation;
     specular *= attenuation;
 
-    return vec3(1.0f, 0.9f, 0.875f) * ambient + LdotN * (diffuse + specular);
-    float diffValue = 0.2;
+    return light.color * (ambient + LdotN * (diffuse + specular));
 }
