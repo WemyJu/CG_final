@@ -60,7 +60,6 @@ float cocView = 0.0f;
 
 GLfloat lastX = 400, lastY = 300;
 GLfloat yaw=0.0, pitch=0.0;
-//bool firstMouse = true;
 
 bool isCursorRelease = false;
 GLfloat mouse_sensitivity = 0.2;
@@ -96,7 +95,6 @@ glm::vec3 pointLightPositions2[] = {
 	glm::vec3(22.3562f, 21.5342f, 15.2914f)
 };
 
-
 GLuint program, screenProgram;
 
 static void setUniformFloat(GLuint program, const std::string &name, const float &value);
@@ -104,7 +102,6 @@ static void setupLighting(int LightNo);
 
 void makeSampleOffsets(float angle)
 {
-	//std::cout << "makeSampleOffsets" << endl;
 	float aspectRatio = viewportSize.x / viewportSize.y;
 
 	// convert from polar to cartesian
@@ -118,7 +115,6 @@ void makeSampleOffsets(float angle)
 	float t;
 	for (int i=0; i < SAMPLECNT; i++){
 		t = i / (SAMPLECNT - 1.0f); // 0 to 1
-		//output[i] = (-pt)+t*2*pt;
 		glm::vec2 output = glm::vec2((-pt) + t * 2 * pt);
 		sampleKernel[i * 2] = output.x;
 		sampleKernel[i * 2+1] = output.y;
@@ -161,22 +157,22 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		}
 	}
 	else if (key == GLFW_KEY_MINUS && action == GLFW_PRESS)
-		Zoom += 1.0f;
+		Zoom = (Zoom+1.0f > 140.0f) ? Zoom : Zoom+1.0f;
 	else if (key == GLFW_KEY_EQUAL && action == GLFW_PRESS)
-		Zoom -= 1.0f;
-	else if (key == GLFW_KEY_COMMA && action == GLFW_PRESS)
-		focusDis -= 0.05f;
-	else if (key == GLFW_KEY_PERIOD && action == GLFW_PRESS)
+		Zoom = (Zoom-1.0f < 80.0f) ? Zoom : Zoom-1.0f;
+	else if (key == GLFW_KEY_COMMA && action == GLFW_PRESS)	// smaller focus distance
+		focusDis = (focusDis-0.05f < 0.0f) ? focusDis : focusDis-0.05f;
+	else if (key == GLFW_KEY_PERIOD && action == GLFW_PRESS)// bigger focus distance
 		focusDis += 0.05f;
-	else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS)
-		focalLen -= 0.005f;
-	else if (key == GLFW_KEY_UP && action == GLFW_PRESS)
+	else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS)	// smaller focal length
+		focalLen = (focalLen-0.005f < 0.0f) ? focalLen : focalLen-0.005f;
+	else if (key == GLFW_KEY_UP && action == GLFW_PRESS)	// bigger focal length
 		focalLen += 0.005f;
-	else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
-		aperture -= 1.0f;
-	else if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
+	else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)	// smaller aperture size
+		aperture = (aperture-1.0f < 0.0f) ? aperture : aperture-1.0f;
+	else if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)	// bigger aperture size
 		aperture += 1.0f;
-	else if (key == GLFW_KEY_B && action == GLFW_PRESS)
+	else if (key == GLFW_KEY_B && action == GLFW_PRESS)		// toggle blurring
 		blur = !blur;
 	else if (key == GLFW_KEY_4 && action == GLFW_PRESS){
 		currentShapeAng.clear();
@@ -220,8 +216,6 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 			useHDR = true;
 		}
 	}
-	//if(focalLen < 0.02)
-	//	focalLen = 0.02;
 	std::cout << "Aperture Size : " << aperture << std::endl;
 	std::cout << "Focal Length : " << focalLen << std::endl;
 	std::cout << "Focus Distance : " << focusDis << std::endl;
@@ -266,8 +260,6 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
         glfwGetCursorPos(window, &xpos, &ypos);
-	//TODO: pass mouse position to do post processing
-
 }
 
 static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
@@ -551,8 +543,10 @@ static void render(Model ourmodel)
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	if (!blur) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
     ourmodel.Draw(program);
 
     if(!blur)
@@ -613,7 +607,6 @@ static void render(Model ourmodel)
 
 	/********* 3. Switch to default framebuffer and do the final post processing *********/
 
-	//glBindVertexArray(screenVAO);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(1.0f,1.0f,1.0f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -685,9 +678,6 @@ int main(int argc, char *argv[])
 	glfwSwapInterval(1);
 
 	glEnable(GL_DEPTH_TEST);
-
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
 
 	// Setup input callback
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
